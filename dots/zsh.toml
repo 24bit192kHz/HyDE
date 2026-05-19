@@ -1,0 +1,38 @@
+
+[zsh]
+
+[[zsh.files]]
+action = "sync"
+source_root = "Configs"
+target_root = "${HOME}"
+paths = ".zshenv"
+
+[[zsh.files]]
+action = "sync"
+source_root = "Configs/.config/zsh"
+target_root = "${XDG_CONFIG_HOME}/zsh"
+paths = [".zshenv", "user.zsh", "prompt.zsh", "plugin.zsh"]
+
+[[zsh.files]]
+action = "sync"
+source_root = "Configs/.config/zsh/conf.d"
+target_root = "${XDG_CONFIG_HOME}/zsh/conf.d"
+paths = ["hyde", "00-hyde.zsh"]
+
+[[zsh.files]]
+action = "sync"
+source_root = "Configs/.config/zsh/functions"
+target_root = "${XDG_CONFIG_HOME}/zsh/functions"
+paths = ["error-handlers.zsh", "fzf.zsh", "duf.zsh", "eza.zsh", "bat.zsh"]
+
+[[zsh.files]]
+action = "sync"
+source_root = "Configs/.config/zsh/completions"
+target_root = "${XDG_CONFIG_HOME}/zsh/completions"
+paths = "hydectl.zsh"
+
+[[zsh.files]]
+action = "preserve"
+source_root = "Configs/.config/zsh"
+target_root = "${XDG_CONFIG_HOME}/zsh"
+paths = ".p10k.zsh"

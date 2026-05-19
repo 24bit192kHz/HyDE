@@ -1,0 +1,14 @@
+
+[fastfetch]
+
+[[fastfetch.files]]
+action = "preserve"
+source_root = "Configs/.config"
+target_root = "${XDG_CONFIG_HOME}"
+paths = "fastfetch"
+
+[[fastfetch.files]]
+action = "sync"
+source_root = "Configs/.local/share/fastfetch/presets"
+target_root = "${HOME}/.local/share/fastfetch/presets"
+paths = "hyde"

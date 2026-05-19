@@ -1,0 +1,12 @@
+[hyprlock]
+
+[[hyprlock.dependency]]
+yay = ["hyprlock"]
+paru = ["hyprlock"]
+dnf = ["hyprlock"]
+
+[[hyprlock.files]]
+action = "preserve"
+source_root = "Configs/.config/hypr"
+target_root = "${XDG_CONFIG_HOME}/hypr"
+paths = "hyprlock.conf"
