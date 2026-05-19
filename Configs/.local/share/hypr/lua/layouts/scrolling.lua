@@ -1,0 +1,69 @@
+local layout = {
+	name = "Scrolling",
+	icon = "",
+	description = "Scrolling layout // Best for maximizing space",
+}
+if not hl then
+	return layout
+end
+
+hl.config({
+	general = {
+		layout = "scrolling",
+	},
+	scrolling = {
+		fullscreen_on_one_column = true,
+		column_width = 0.9,
+		follow_min_visible = 0.10,
+		-- direction = "down",
+		explicit_column_widths = "0.1, 0.333, 0.5, 0.667, 0.9",
+		focus_fit_method = 0,
+	},
+})
+
+-- Just Utilizing the default keybinds for Scrolling Layout
+
+_F = { description = "[Scrolling Resize Active Window] resize window right", repeating = true }
+hl.bind("ALT + EQUAL", hl.dsp.layout("colresize +conf"), _F)
+hl.bind("ALT + L", hl.dsp.layout("colresize +conf"), _F)
+_F = { description = "[Scrolling Resize Active Window] resize window left", repeating = true }
+hl.bind("ALT + MINUS", hl.dsp.layout("colresize -conf"), _F)
+hl.bind("ALT + H", hl.dsp.layout("colresize -conf"), _F)
+
+_F = { description = "[Scrolling] move window right" }
+hl.bind("ALT + period", hl.dsp.layout("move +col"), _F)
+_F = { description = "[Scrolling] move window left" }
+hl.bind("ALT + comma", hl.dsp.layout("move -col"), _F)
+--
+-- _F = {description = "[Scrolling] swap current column up"}
+-- hl.bind("ALT + K", hl.dsp.layout("swapcol u"), _F)
+-- _F = {description = "[Scrolling] swap current column down"}
+-- hl.bind("ALT + J", hl.dsp.layout("swapcol d"), _F)
+_F = { description = "[Scrolling] swap current column left" }
+hl.bind("ALT + Y", hl.dsp.layout("swapcol l"), _F)
+_F = { description = "[Scrolling] swap current column right" }
+hl.bind("ALT + I", hl.dsp.layout("swapcol r"), _F)
+_F = { description = "[Scrolling] promote focused window to its own column" }
+hl.bind("ALT + U", hl.dsp.layout("promote"), _F)
+
+hl.gesture({
+	fingers = 4,
+	direction = "horizontal",
+	action = "workspace",
+})
+
+hl.gesture({
+	fingers = 4,
+	direction = "vertical",
+	action = "workspace",
+})
+
+for _, dir in ipairs({ "up", "down", "left", "right" }) do
+	hl.gesture({
+		fingers = 3,
+		direction = dir,
+		action = function()
+			hl.dispatch(hl.dsp.focus({ direction = dir }))
+		end,
+	})
+end

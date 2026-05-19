@@ -9,3 +9,4 @@ Scripts/pkg_user.lst
 .zsh_history*
 .zcompdump*
 Configs/.config/uwsm/*
+dots*
