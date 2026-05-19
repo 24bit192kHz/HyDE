@@ -534,7 +534,6 @@ def run_waybar():
             "--slice=app-graphical.slice",
             "--property=Type=exec",
             "--property=ExitType=cgroup",
-            "--property=After=graphical-session.target",
             "--property=PartOf=graphical-session.target",
             "--quiet",
             "--",
@@ -546,7 +545,7 @@ def run_waybar():
 
 def kill_waybar():
     """Stop Waybar systemd unit for current session desktop."""
-    subprocess.run(["systemctl", "--user", "stop", UNIT_NAME])
+    subprocess.run(["systemctl", "--user", "--no-block", "stop", UNIT_NAME])
     logger.debug(f"Stopped Waybar systemd unit: {UNIT_NAME}")
 
 
@@ -554,7 +553,7 @@ def restart_waybar():
     """Restart Waybar systemd unit for current session desktop."""
     # systemctl restart works on both active and inactive loaded units
     result = subprocess.run(
-        ["systemctl", "--user", "restart", UNIT_NAME],
+        ["systemctl", "--user", "--no-block", "restart", UNIT_NAME],
         capture_output=True,
     )
     if result.returncode != 0:
@@ -901,7 +900,7 @@ def update_global_css():
  Dynamic Style Configuration *
  This is handled by HyDE
 
- To generate a dynamic configuration 
+ To generate a dynamic configuration
  base on theme and user settings
 
 */
@@ -1271,7 +1270,6 @@ def watch_waybar():
             "--property=ExitType=cgroup",
             "--property=Restart=always",
             "--property=RestartSec=1",
-            "--property=After=graphical-session.target",
             "--property=PartOf=graphical-session.target",
             "--quiet",
             "--",

@@ -12,6 +12,10 @@ dependencies = [
     "PyQt6",
     "pyprland==3.3.1",
     "hererocks>=0.25.1",
+    "gem>=0.1.12",
+    "pre-commit>=4.6.0",
+    "websockets>=16.0",
+    "xdg-prefs",
 ]
 
 [project.optional-dependencies]
@@ -20,3 +24,6 @@ amd = ["pyamdgpuinfo"]
 [tool.ruff]
 line-length = 100
 indent-width = 4
+
+[tool.uv.sources]
+xdg-prefs = { git = "https://github.com/rchaput/xdg-prefs" }

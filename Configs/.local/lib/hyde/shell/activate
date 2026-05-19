@@ -1,0 +1,32 @@
+#!/usr/bin/env sh
+#TODO make a template for all or sort of transpile to other shells!
+HYDE_HYPRLAND_LUA=0
+HYPRLAND_CONFIG="${XDG_DATA_HOME:-$HOME/.local/share}/hypr/hyprland.conf"
+
+for HYDE_LUA in \
+    "${XDG_DATA_HOME:-$HOME/.local/share}/hypr/hyde.lua" \
+    /usr/local/share/hypr/hyde.lua \
+    /usr/share/hypr/hyde.lua; do
+    [ -f "$HYDE_LUA" ] && { HYDE_HYPRLAND_LUA=1; HYPRLAND_CONFIG="$HYDE_LUA"; break; }
+done
+
+[ "$HYDE_HYPRLAND_LUA" != 1 ] && {
+    printf 'Missing hyde.lua\n' >&2
+    exit 1
+}
+
+# command -v is POSIX builtin — no fork, no PATH loop needed
+command -v lua     >/dev/null 2>&1 || { printf 'Missing lua\n'      >&2; exit 1; }
+command -v luarocks >/dev/null 2>&1 || { printf 'Missing luarocks\n' >&2; exit 1; }
+
+if command -v readelf >/dev/null 2>&1; then
+    _hyprbin=$(command -v hyprland 2>/dev/null) && [ -n "$_hyprbin" ] && {
+        _readelf_out=$(readelf -d "$_hyprbin" 2>/dev/null)
+        case "$_readelf_out" in
+            *NEEDED*lua*) : ;;
+            *) printf 'Hyprland is not linked against Lua\n' >&2; exit 1 ;;
+        esac
+    }
+fi
+
+export HYDE_HYPRLAND_LUA HYPRLAND_CONFIG

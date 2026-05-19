@@ -15,7 +15,7 @@ Modify '$XDG_CONFIG_HOME/hyde/config.toml'  to set options.
 
       Command on Charging: $execute_charging
       Command on Discharging: $execute_discharging
-      Dock Mode: $dock (Will not notify on status change) 
+      Dock Mode: $dock (Will not notify on status change)
 
 
 EOF

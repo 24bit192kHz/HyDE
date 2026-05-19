@@ -6,11 +6,17 @@ keyconfDir="$confDir/hypr"
 kb_hint_conf=("$keyconfDir/hyprland.conf" "$keyconfDir/keybindings.conf" "$keyconfDir/userprefs.conf")
 kb_hint_conf+=("${ROFI_KEYBIND_HINT_CONFIG[@]}")
 kb_cache="$XDG_RUNTIME_DIR/hyde/keybinds_hint.rofi"
+
+if [[ $1 == "--reload" ]]; then
+    "${LIB_DIR}/hyde/keybinds/hint-hyprland.py" --format rofi >"$kb_cache" && echo "Key Bind cache updated"
+    exit 0
+fi
+
 [ -f "$kb_cache" ] && {
-    trap '${LIB_DIR}/hyde/keybinds/hint-hyprland.py --format rofi > "$kb_cache" && echo "Keybind cache updated" ' EXIT
+    trap '${LIB_DIR}/hyde/keybinds/hint-hyprland.py --format rofi > "$kb_cache" && echo "Key Bind cache updated" ' EXIT
 }
 output="$(if
-    ! cat "$kb_cache" 2> /dev/null
+    ! cat "$kb_cache" 2>/dev/null
 then
     "${LIB_DIR}/hyde/keybinds/hint-hyprland.py" --format rofi | tee "$kb_cache"
 fi)"
@@ -19,7 +25,7 @@ if [ -z "$output" ]; then
     notify-send "Keybind Hint" "Initialization failed."
     exit 0
 fi
-if ! command -v rofi &> /dev/null; then
+if ! command -v rofi &>/dev/null; then
     echo "$output"
     echo "rofi not detected. Displaying on terminal instead"
     exit 0
@@ -54,9 +60,9 @@ selected=$(echo -e "$output" | rofi -dmenu -p \
     -theme-str "$icon_override" \
     -theme "${ROFI_KEYBIND_HINT_STYLE:-clipboard}" | sed 's/.*\s*//')
 if [ -z "$selected" ]; then exit 0; fi
-dispatch=$(awk -F ':::' '{print $2}' <<< "$selected" | xargs)
-arg=$(awk -F ':::' '{print $3}' <<< "$selected" | xargs)
-repeat=$(awk -F ':::' '{print $4}' <<< "$selected" | xargs)
+dispatch=$(awk -F ':::' '{print $2}' <<<"$selected" | xargs)
+arg=$(awk -F ':::' '{print $3}' <<<"$selected" | xargs)
+repeat=$(awk -F ':::' '{print $4}' <<<"$selected" | xargs)
 RUN() {
     case "$(eval "hyprctl dispatch '$dispatch' '$arg'")" in *"Not enough arguments"*) exec $0 ;; esac
 }
