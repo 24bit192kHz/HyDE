@@ -1,32 +1,151 @@
 #!/usr/bin/env sh
-#TODO make a template for all or sort of transpile to other shells!
-HYDE_HYPRLAND_LUA=0
-HYPRLAND_CONFIG="${XDG_DATA_HOME:-$HOME/.local/share}/hypr/hyprland.conf"
 
-for HYDE_LUA in \
-    "${XDG_DATA_HOME:-$HOME/.local/share}/hypr/hyde.lua" \
-    /usr/local/share/hypr/hyde.lua \
-    /usr/share/hypr/hyde.lua; do
-    [ -f "$HYDE_LUA" ] && { HYDE_HYPRLAND_LUA=1; HYPRLAND_CONFIG="$HYDE_LUA"; break; }
-done
+[ -n "${HYDE_ACTIVATED:-}" ] && return 0 2>/dev/null
 
-[ "$HYDE_HYPRLAND_LUA" != 1 ] && {
-    printf 'Missing hyde.lua\n' >&2
-    exit 1
+HYDE_ACTIVATED=1
+
+HYDE_MODE=""
+HYPRLAND_CONFIG=""
+
+setup_xdg() {
+    : "${XDG_CONFIG_HOME:=$HOME/.config}"
+    : "${XDG_CACHE_HOME:=$HOME/.cache}"
+    : "${XDG_DATA_HOME:=$HOME/.local/share}"
+    : "${XDG_STATE_HOME:=$HOME/.local/state}"
+
+    # fallback only
+    : "${XDG_RUNTIME_DIR:=/tmp}"
+
+    export XDG_CONFIG_HOME XDG_CACHE_HOME XDG_DATA_HOME XDG_STATE_HOME XDG_RUNTIME_DIR
 }
 
-# command -v is POSIX builtin — no fork, no PATH loop needed
-command -v lua     >/dev/null 2>&1 || { printf 'Missing lua\n'      >&2; exit 1; }
-command -v luarocks >/dev/null 2>&1 || { printf 'Missing luarocks\n' >&2; exit 1; }
+hyde_die() {
+    printf '%s\n' "$*" >&2
+    return 1
+}
 
-if command -v readelf >/dev/null 2>&1; then
-    _hyprbin=$(command -v hyprland 2>/dev/null) && [ -n "$_hyprbin" ] && {
-        _readelf_out=$(readelf -d "$_hyprbin" 2>/dev/null)
-        case "$_readelf_out" in
-            *NEEDED*lua*) : ;;
-            *) printf 'Hyprland is not linked against Lua\n' >&2; exit 1 ;;
-        esac
+hyde_has() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+find_hyde_lua() {
+    for path in \
+        "$XDG_DATA_HOME/hypr/hyde.lua" \
+        /usr/local/share/hypr/hyde.lua \
+        /usr/share/hypr/hyde.lua; do
+        [ -f "$path" ] && {
+            printf '%s\n' "$path"
+            return 0
+        }
+    done
+
+    return 1
+}
+
+find_legacy_config() {
+    for path in \
+        "$XDG_DATA_HOME/hypr/hyprland.conf" \
+        /usr/local/share/hypr/hyprland.conf \
+        /usr/share/hypr/hyprland.conf \
+        "$XDG_CONFIG_HOME/hypr/hyprland.conf" \
+        /etc/xdg/hypr/hyprland.conf; do
+        [ -f "$path" ] && {
+            printf '%s\n' "$path"
+            return 0
+        }
+    done
+
+    return 1
+}
+
+find_hyprland_bin() {
+    for bin in \
+        Hyprland \
+        hyprland; do
+        if hyde_has "$bin"; then
+            command -v "$bin"
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+hyprland_has_lua() {
+    hyde_has readelf || return 0
+
+    _hyprbin=$(find_hyprland_bin) || return 1
+
+    case "$(readelf -d "$_hyprbin" 2>/dev/null)" in
+    *NEEDED*lua*)
+        return 0
+        ;;
+    esac
+
+    return 1
+}
+
+check_lua_runtime() {
+    hyde_has lua || return 1
+    hyde_has luarocks || return 1
+}
+
+setup_lua_mode() {
+    HYPRLAND_CONFIG=$(find_hyde_lua) || return 1
+
+    check_lua_runtime || {
+        printf 'Lua runtime incomplete\n' >&2
+        return 1
     }
-fi
 
-export HYDE_HYPRLAND_LUA HYPRLAND_CONFIG
+    hyprland_has_lua || {
+        printf 'Hyprland lacks Lua support\n' >&2
+        return 1
+    }
+
+    HYDE_MODE="lua"
+    HYDE_FEATURE_LUA=1
+
+    export HYDE_FEATURE_LUA
+
+    return 0
+}
+
+setup_legacy_mode() {
+    HYPRLAND_CONFIG=$(find_legacy_config) || return 1
+
+    HYDE_MODE="legacy"
+    HYDE_FEATURE_LUA=0
+
+    export HYDE_FEATURE_LUA
+
+    return 0
+}
+
+setup_session() {
+    : "${XDG_CURRENT_DESKTOP:=HyDE}"
+    : "${XDG_SESSION_DESKTOP:=HyDE}"
+    : "${XDG_SESSION_TYPE:=wayland}"
+
+    export XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP XDG_SESSION_TYPE
+}
+
+hyde_activate() {
+    setup_xdg
+    setup_session
+
+    if setup_lua_mode; then
+        :
+    elif setup_legacy_mode; then
+        :
+    else
+        hyde_die 'No valid HyDE configuration found'
+        return 1
+    fi
+
+    export HYDE_ACTIVATED HYDE_MODE HYPRLAND_CONFIG
+
+    return 0
+}
+
+hyde_activate

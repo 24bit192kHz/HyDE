@@ -7,14 +7,13 @@ version = "0.1.0" # Version of the configuration file // Follows Semantic Versio
 owner = "The HyDE Project" # Owner of the configuration file
 action = "preserve" # Actions can either be sync or preserve
 git = "https://github.com/HyDE-Project/HyDE.git"
-git_branch = "lua"
+git_branch = "dev"
 pre_command = "echo 'starting deployment'"
 post_command = "notify-send 'deez done'"
 # dots = ["kitty", "hyprland"] # List of dots to be used in the configuration file
 include =[
-
     "dots/hyde.toml",
-    "dots/hyprland.toml",
+    "dots/hyprland-legacy.toml",
     "dots/waybar.toml",
     "dots/lsd.toml",
     "dots/rofi.toml",
