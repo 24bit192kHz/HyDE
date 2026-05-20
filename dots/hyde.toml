@@ -16,7 +16,7 @@ action = "sync"
 source_root = "Configs/.local/lib"
 target_root = "${HOME}/.local/lib"
 paths = "hyde"
-ignore_paths = [".vscode", "__pycache__"]
+ignore_paths = [".*", "__pycache__" ]
 
 # [[hyde.files]]
 # action = "sync"
@@ -56,11 +56,11 @@ source_root = "Configs/.config/pypr"
 target_root = "${XDG_CONFIG_HOME}/pypr"
 paths = "config.toml"
 
-[[hyde.files]]
-action = "sync"
-source_root = "Configs/.config/systemd"
-target_root = "${XDG_CONFIG_HOME}/systemd"
-paths = "user"
+# [[hyde.files]]
+# action = "sync"
+# source_root = "Configs/.config/systemd"
+# target_root = "${XDG_CONFIG_HOME}/systemd"
+# paths = "user"
 
 [[hyde.files]]
 action = "sync"

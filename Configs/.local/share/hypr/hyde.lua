@@ -64,14 +64,4 @@ require("start_up")
 -- --* user now can have this file
 check_require("hyprland")
 -- --* workflows configuration overrides everything
-require("lua_state.workflows")
-
---* finalized all variables as hyde properties 'hyde:variable'. This is faster to query than dynamic variables
--- require("finale")
---
---
-
-hl.notification.create({
-	text = "Hyprland Reloaded",
-	timeout = 5000,
-})
+check_require("lua_state.workflows")
