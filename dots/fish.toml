@@ -1,5 +1,9 @@
-
 [fish]
+
+[[fish.dependency]]
+yay = ["fish", "starship" , "fastfetch"]
+paru = ["fish", "starship", "fastfetch"]
+dnf = ["fish", "starship", "fastfetch"]
 
 [[fish.files]]
 action = "sync"

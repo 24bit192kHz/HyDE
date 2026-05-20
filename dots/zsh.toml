@@ -1,6 +1,11 @@
 
 [zsh]
 
+[[zsh.dependency]]
+yay = ["zsh", "starship", "fastfetch"]
+paru = ["zsh", "starship", "fastfetch"]
+dnf = ["zsh", "starship", "fastfetch"]
+
 [[zsh.files]]
 action = "sync"
 source_root = "Configs"

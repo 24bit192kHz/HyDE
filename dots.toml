@@ -12,9 +12,9 @@ pre_command = "echo 'starting deployment'"
 post_command = "notify-send 'deez done'"
 # dots = ["kitty", "hyprland"] # List of dots to be used in the configuration file
 include =[
-
-    "dots/hyde.toml",
+    "dots/deps.toml",
     "dots/hyprland.toml",
+    "dots/hyde.toml",
     "dots/waybar.toml",
     "dots/lsd.toml",
     "dots/rofi.toml",
@@ -34,7 +34,6 @@ include =[
     "dots/zsh.toml",
     "dots/wallbash-vim.toml",
 ]
-
 
 # Loads an array of package manager commands
 # This helps support custom package managers

@@ -1,5 +1,5 @@
 # This is a full deez dots toml manifest file for Hyde
-# This strips all the old legacy hyprland config
+# This uses the old legacy hyprland config
 #  Configuration file for HyDE Dotfiles Manager - Deez Dots
 # This will also serve as an example for the configuration file
 [global] #  This is used to define global variables use for default fallbacks
@@ -13,6 +13,7 @@ post_command = "notify-send 'deez done'"
 # dots = ["kitty", "hyprland"] # List of dots to be used in the configuration file
 include =[
     "dots/hyde.toml",
+    "dots/deps.toml",
     "dots/hyprland-legacy.toml",
     "dots/waybar.toml",
     "dots/lsd.toml",
