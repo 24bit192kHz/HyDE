@@ -10,3 +10,4 @@ Scripts/pkg_user.lst
 .zcompdump*
 Configs/.config/uwsm/*
 .*
+build

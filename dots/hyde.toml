@@ -1,36 +1,13 @@
 [hyde]
-owner = "khing"
 description = "Hyde core configuration"
 pre_command = "echo 'Pre commands '"
 post_command = "echo 'HyDE backed up!'"
 
-[[hyde.dependency]]
-pacman = ["hyprland", "nwg-look", "qt5ct", "qt6ct"]
-dnf = ["another-dependency"]
-
-[[hyde.files]]
-action = "preserve"
-source_root = "Configs/.config/hypr"
-target_root = "${XDG_CONFIG_HOME}/hypr"
-paths = "nvidia.conf"
-
-[[hyde.files.dependency]]
-pacman = ["nvidia-utils"]
-dnf = ["another-dependency"]
-
 #? Core configuration
 [[hyde.files]]
 source_root = "Configs/.config"
-target_root = "$XDG_CONFIG_HOME"
-paths = [
-    "hyde/wallbash",
-    "hypr/hyprland.conf",
-    "hypr/windowrules.conf",
-    "hypr/keybindings.conf",
-    "hypr/monitors.conf",
-    "hypr/animations.conf",
-    "hypr/themes",
-]
+target_root = "${XDG_CONFIG_HOME}"
+paths = ["hyde/wallbash"]
 
 [[hyde.files]]
 clean_target = true
@@ -38,15 +15,13 @@ action = "sync"
 source_root = "Configs/.local/lib"
 target_root = "${HOME}/.local/lib"
 paths = "hyde"
-
-
+ignore_paths = [".vscode", "__pycache__"]
 
 [[hyde.files]]
 action = "sync"
 source_root = "Configs/.local/share"
 target_root = "${XDG_DATA_HOME}"
 paths = ["icons/Wallbash-Icon", "themes/Wallbash-Gtk"]
-
 
 [[hyde.files]]
 clean_target = true
@@ -56,12 +31,14 @@ target_root = "${XDG_DATA_HOME}"
 paths = "hyde"
 
 [[hyde.files]]
+action = "sync"
 source_root = "Configs/.config"
 target_root = "${XDG_CONFIG_HOME}"
 paths = ["gtk-3.0", "Kvantum", "nwg-look", "qt5ct", "qt6ct", "xsettingsd"]
 
 [[hyde.files]]
-source_root = "hyde"
+action = "sync"
+source_root = "Configs/"
 target_root = "${HOME}"
 paths = ".gtkrc-2.0"
 
@@ -71,12 +48,6 @@ action = "preserve"
 source_root = "Configs/.config/hyde"
 target_root = "${XDG_CONFIG_HOME}/hyde"
 paths = "config.toml"
-
-[[hyde.files]]
-action = "preserve"
-source_root = "Configs/.config/hypr"
-target_root = "${XDG_CONFIG_HOME}/hypr"
-paths = ["shaders.conf", "workflows.conf", "userprefs.conf"]
 
 [[hyde.files]]
 action = "preserve"
@@ -91,28 +62,16 @@ target_root = "${XDG_CONFIG_HOME}/systemd"
 paths = "user"
 
 [[hyde.files]]
-action = "preserve"
-source_root = "Configs/.local/state/hyde"
-target_root = "${HOME}/.local/state/hyde"
-paths = "hyprland.conf"
-
-[[hyde.files]]
 action = "sync"
 source_root = "Configs/.config/uwsm"
 target_root = "${XDG_CONFIG_HOME}/uwsm"
 paths = ["env", "env-hyprland", "env.d", "env-hyprland.d"]
 
 [[hyde.files]]
-action = "sync"
+action = "preserve"
 source_root = "Configs/.config"
 target_root = "${XDG_CONFIG_HOME}"
 paths = "xdg-terminals.list"
-
-[[hyde.files]]
-action = "sync"
-source_root = "Configs/.local/share"
-target_root = "${XDG_DATA_HOME}"
-paths = "hypr"
 
 [[hyde.files]]
 action = "sync"
