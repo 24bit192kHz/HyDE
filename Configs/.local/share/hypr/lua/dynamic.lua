@@ -1,4 +1,3 @@
--- TODO Add Default colors if not present
 local color = check_require("lua_state.colors") or {}
 
 if next(color) then
