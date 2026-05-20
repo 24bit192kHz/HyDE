@@ -1,46 +1,51 @@
 -- TODO Add Default colors if not present
 local color = check_require("lua_state.colors") or {}
 
-hl.config(
-    {
-        general = {
-            col = {
-                active_border = {colors = {color._pry4_rgba, color._4xa1_rgba}, angle = 45},
-                inactive_border = {colors = {color._pry1_rgba, color._pry2_rgba}, angle = 45}
-            }
-        },
-        group = {
-            groupbar = {
-                enabled = true,
-                gradients = 1,
-                render_titles = 1,
-                font_weight_inactive = "normal",
-                font_weight_active = "semibold",
+if next(color) then
+    hl.config(
+        {
+            general = {
                 col = {
-                    active = {colors = {color._pry3_rgba}, angle = 45},
-                    inactive = {colors = {color._pry1_rgba}, angle = 45},
-                    locked_active = {colors = {color._pry2_rgba}, angle = 45},
-                    locked_inactive = {colors = {color._pry4_rgba}, angle = 45}
-                },
-                text_color = "rgba(" .. color._txt3 .. "ee)",
-                text_color_inactive = "rgba(" .. color._txt1 .. "ee)",
-                blur = true,
-                font_size = hyde.ui.font_size,
-                font_family = hyde.ui.groupbar_font or hyde.ui.font -- fallback to main font if groupbar_font is not set
+                    active_border = {colors = {color._pry4_rgba, color._4xa1_rgba}, angle = 45},
+                    inactive_border = {colors = {color._pry1_rgba, color._pry2_rgba}, angle = 45}
+                }
             },
-            col = {
-                border_active = {colors = {color._pry4_rgba, color._pry2_rgba}, angle = 45},
-                border_inactive = {colors = {color._pry1_rgba, color._pry3_rgba}, angle = 45},
-                border_locked_active = {colors = {color._txt3_rgba, color._txt4_rgba}, angle = 45},
-                border_locked_inactive = {colors = {color._txt1_rgba, color._txt2_rgba}, angle = 45}
+            group = {
+                groupbar = {
+                    enabled = true,
+                    gradients = 1,
+                    render_titles = 1,
+                    font_weight_inactive = "normal",
+                    font_weight_active = "semibold",
+                    col = {
+                        active = {colors = {color._pry3_rgba}, angle = 45},
+                        inactive = {colors = {color._pry1_rgba}, angle = 45},
+                        locked_active = {colors = {color._pry2_rgba}, angle = 45},
+                        locked_inactive = {colors = {color._pry4_rgba}, angle = 45}
+                    },
+                    text_color = "rgba(" .. color._txt3 .. "ee)",
+                    text_color_inactive = "rgba(" .. color._txt1 .. "ee)",
+                    blur = true,
+                    font_size = hyde.ui.font_size,
+                    font_family = hyde.ui.groupbar_font or hyde.ui.font -- fallback to main font if groupbar_font is not set
+                },
+                col = {
+                    border_active = {colors = {color._pry4_rgba, color._pry2_rgba}, angle = 45},
+                    border_inactive = {colors = {color._pry1_rgba, color._pry3_rgba}, angle = 45},
+                    border_locked_active = {colors = {color._txt3_rgba, color._txt4_rgba}, angle = 45},
+                    border_locked_inactive = {colors = {color._txt1_rgba, color._txt2_rgba}, angle = 45}
+                }
+            },
+            misc = {
+                font_family = hyde.ui.font
             }
-        },
-        misc = {
-            font_family = hyde.ui.font
         }
-    }
-)
+    )
 
+else
+    local message= "[HyDE] Hyprland does not detect colors! Run: hyde-shell reload"
+    hl.exec_cmd("hyprctl seterror 'rgba(c79bf0ff)' " .. message)
+end
 --
 
 -- Loads the them config from lua_state.
@@ -74,7 +79,7 @@ hl.config(
 )
 
 local theme_mode = _G.THEME_MODE or false
-if not theme_mode then
+if not theme_mode and next(color) then
     hl.config(
         {
             general = {

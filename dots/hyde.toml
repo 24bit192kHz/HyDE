@@ -5,6 +5,7 @@ post_command = "echo 'HyDE backed up!'"
 
 #? Core configuration
 [[hyde.files]]
+action = "preserve"
 source_root = "Configs/.config"
 target_root = "${XDG_CONFIG_HOME}"
 paths = ["hyde/wallbash"]
@@ -17,11 +18,11 @@ target_root = "${HOME}/.local/lib"
 paths = "hyde"
 ignore_paths = [".vscode", "__pycache__"]
 
-[[hyde.files]]
-action = "sync"
-source_root = "Configs/.local/share"
-target_root = "${XDG_DATA_HOME}"
-paths = ["icons/Wallbash-Icon", "themes/Wallbash-Gtk"]
+# [[hyde.files]]
+# action = "sync"
+# source_root = "Configs/.local/share"
+# target_root = "${XDG_DATA_HOME}"
+# paths = ["icons/Wallbash-Icon", "themes/Wallbash-Gtk"]
 
 [[hyde.files]]
 clean_target = true

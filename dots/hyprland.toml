@@ -1,6 +1,6 @@
 [hyprland]
 description = "hyprland with lua"
-conflicts = ["hyprland_legacy"]
+conflicts = ["hyprland_legacy", "hyprland-legacy"]
 version = "0.55.0"
 
 [[hyprland.dependency]]
@@ -12,14 +12,14 @@ dnf = ["hyprland"]
 action = "sync"
 source_root = "Configs/.local/share/hypr/"
 target_root = "${XDG_DATA_HOME}/hypr/"
-paths = ["lua", "hyde"]
+paths = ["lua", "hyde.lua"]
 ignored_paths = ["*.conf", ".vscode"]
 
-[[hyprland.files]]
-action = "preserve"
-source_root = "Configs/.local/state/hyde"
-target_root = "${XDG_STATE_HOME}/hyde/"
-paths = ["lua_state/*.lua"]
+# [[hyprland.files]]
+# action = "preserve"
+# source_root = "Configs/.local/state/hyde"
+# target_root = "${XDG_STATE_HOME}/hyde/"
+# paths = ["lua_state/*.lua"]
 
 [[hyprland.files]]
 action = "preserve"
