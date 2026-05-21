@@ -2,18 +2,60 @@ from __future__ import annotations
 import os
 import socket
 import json
-import threading
+import subprocess
 import time
 from pyutils.compositor import HyprctlWrapper
 
-"""Hyprland compositor backend for session management.
-
-All Hyprland-specific IPC, dispatch syntax, window rules, and
-experimental features (tab-group restore) live here.
-"""
+"""Hyprland compositor backend for session save/restore."""
 
 
 class HyprlandBackend:
+    @staticmethod
+    def _lua_quote(value: str) -> str:
+        return json.dumps(str(value))
+
+    @classmethod
+    def _lua_value(cls, value) -> str:
+        if isinstance(value, str) and value.startswith("__RAW__"):
+            return value[len("__RAW__") :]
+        if isinstance(value, bool):
+            return "true" if value else "false"
+        if isinstance(value, (int, float)):
+            return str(value)
+        if isinstance(value, (list, tuple)):
+            return "{ " + ", ".join(cls._lua_value(v) for v in value) + " }"
+        if isinstance(value, dict):
+            return cls._lua_table(value)
+        return cls._lua_quote(value)
+
+    @classmethod
+    def _lua_table(cls, values: dict) -> str:
+        parts = []
+        for key, value in values.items():
+            if value is None:
+                continue
+            parts.append(f"{key} = {cls._lua_value(value)}")
+        return "{ " + ", ".join(parts) + " }"
+
+    @staticmethod
+    def _lua_config(path: str, value: bool | int | str) -> str:
+        keys = path.split(":")
+        lua_value = "true" if value is True else "false" if value is False else str(value)
+        expr = lua_value
+        for key in reversed(keys[1:]):
+            expr = f"{{ {key} = {expr} }}"
+        return f"hl.config({{ {keys[0]} = {expr} }})"
+
+    @classmethod
+    def _lua_client_expr(cls, addr: str) -> str:
+        return f"hl.get_window({cls._lua_quote(f'address:{addr}')})"
+
+    @classmethod
+    def _lua_window_args(cls, addr: str, values: dict) -> str:
+        args = {"window": f"__RAW__{cls._lua_client_expr(addr)}"}
+        args.update(values)
+        return cls._lua_table(args)
+
     @staticmethod
     def _wait_for_window_mapped(addr: str = None, pid: int = None, timeout: float = 5.0) -> bool:
         """
@@ -72,17 +114,22 @@ class HyprlandBackend:
         return json.loads(HyprctlWrapper._send(f"j/{endpoint}"))
 
     @staticmethod
-    def _ipc_dispatch(cmd: str) -> str:
-        return HyprctlWrapper._send(f"/dispatch {cmd}")
+    def _ipc_eval(code: str) -> str:
+        return HyprctlWrapper._send(f"/eval {code}")
 
-    @staticmethod
-    def _ipc_keyword(args: str) -> str:
-        return HyprctlWrapper._send(f"/keyword {args}")
+    def _lua_exec_cmd(self, command: str, rules: dict | None = None) -> str:
+        if rules:
+            return self._ipc_eval(
+                "hl.dispatch(hl.dsp.exec_cmd("
+                + self._lua_quote(command)
+                + ", "
+                + self._lua_table(rules)
+                + "))"
+            )
+        return self._ipc_eval(f"hl.dispatch(hl.dsp.exec_cmd({self._lua_quote(command)}))")
 
-    @staticmethod
-    def _ipc_batch(cmds: list[str]) -> str:
-        joined = ";".join(f"dispatch {c}" for c in cmds)
-        return HyprctlWrapper._send(f"[[BATCH]]/{joined}")
+    def _lua_dispatch(self, dispatcher: str) -> str:
+        return self._ipc_eval(f"hl.dispatch({dispatcher})")
 
     def begin_restore(self) -> None:
         """Best-effort: disable animations temporarily during restore."""
@@ -96,10 +143,13 @@ class HyprlandBackend:
         if not isinstance(opt, dict):
             self._animations_prev = None
             return
-        self._animations_prev = int(opt.get("int", 1))
+        if "bool" in opt:
+            self._animations_prev = 1 if opt.get("bool") else 0
+        else:
+            self._animations_prev = int(opt.get("int", 1))
 
         try:
-            self._ipc_keyword("animations:enabled 0")
+            self._set_config("animations:enabled", False)
         except Exception:
             pass
 
@@ -108,11 +158,14 @@ class HyprlandBackend:
         if self._animations_prev is None:
             return
         try:
-            self._ipc_keyword(f"animations:enabled {self._animations_prev}")
+            self._set_config("animations:enabled", bool(self._animations_prev))
         except Exception:
             pass
         finally:
             self._animations_prev = None
+
+    def _set_config(self, path: str, value: bool | int | str) -> None:
+        self._ipc_eval(self._lua_config(path, value))
 
     def get_clients(self) -> list[dict]:
         return self._ipc_json("clients")
@@ -146,81 +199,105 @@ class HyprlandBackend:
             return name
         return f"name:{name}"
 
-    def _build_rules(self, client: dict, ws_target: str) -> list[str]:
-        """Build Hyprland window-rule list from a saved client dict."""
-        rules: list[str] = [f"workspace {ws_target} silent"]
+    def _build_lua_exec_rules(self, client: dict, ws_target: str) -> dict:
+        """Build rules for ``hl.dsp.exec_cmd(command, rules)``."""
+        rules: dict = {"workspace": f"{ws_target} silent"}
 
         if client.get("floating", False):
-            rules.append("float")
             x, y = client.get("at", [0, 0])
             w, h = client.get("size", [0, 0])
+            rules["float"] = True
             if w > 0 and h > 0:
-                rules.append(f"size {w} {h}")
-            rules.append(f"move {x} {y}")
+                rules["size"] = [w, h]
+            rules["move"] = [x, y]
 
         if client.get("pseudo", False):
-            rules.append("pseudo")
+            rules["pseudo"] = True
         if client.get("pinned", False):
-            rules.append("pin")
+            rules["pin"] = True
 
         fs = client.get("fullscreenClient", client.get("fullscreen", 0))
         if fs in (1, 2):
-            rules.append(f"fullscreen {fs}")
+            rules["fullscreen"] = True
 
-        group_rule = self._group_rule(client)
-        if group_rule:
-            rules.append(group_rule)
+        grouped = client.get("grouped", [])
+        if len(grouped) > 1:
+            rules["group"] = "set"
 
         return rules
 
     def launch(self, command: str, client: dict, ws_target: str) -> None:
-        rules = self._build_rules(client, ws_target)
-        rule_str = "; ".join(rules)
-        self._ipc_dispatch(f"exec [{rule_str}] {command}")
+        self._lua_exec_cmd(command, self._build_lua_exec_rules(client, ws_target))
         self._dispatch_count += 1
 
     def launch_forking(self, command: str, client: dict, ws_target: str) -> None:
-        initial_class = client.get("initialClass", "")
         rule_name = f"_hydesession_{self._dispatch_count}"
 
-        self._ipc_keyword(f"windowrule[{rule_name}]:match:initial_class {initial_class}")
-        self._ipc_keyword(f"windowrule[{rule_name}]:workspace {ws_target} silent")
+        if self._apply_transient_rule(rule_name, client, ws_target):
+            self._transient_rules.append(rule_name)
+            self._lua_exec_cmd(command)
+            self._dispatch_count += 1
+            return
+
+        self._lua_exec_cmd(command)
+        self._dispatch_count += 1
+
+    def _apply_transient_rule(self, rule_name: str, client: dict, ws_target: str) -> bool:
+        initial_class = client.get("initialClass", "")
+        if not initial_class:
+            return False
+
+        rule = self._lua_window_rule(rule_name, client, ws_target)
+        self._ipc_eval(f"hl.window_rule({self._lua_table(rule)})")
+        return True
+
+    @classmethod
+    def _lua_window_rule(cls, rule_name: str, client: dict, ws_target: str) -> dict:
+        rule = {
+            "name": rule_name,
+            "match": {"initial_class": client.get("initialClass", "")},
+            "workspace": f"{ws_target} silent",
+        }
 
         if client.get("floating", False):
-            self._ipc_keyword(f"windowrule[{rule_name}]:float true")
             x, y = client.get("at", [0, 0])
             w, h = client.get("size", [0, 0])
+            rule["float"] = True
             if w > 0 and h > 0:
-                self._ipc_keyword(f"windowrule[{rule_name}]:size {w} {h}")
-            self._ipc_keyword(f"windowrule[{rule_name}]:move {x} {y}")
+                rule["size"] = f"{w} {h}"
+            rule["move"] = f"{x} {y}"
 
         if client.get("pseudo", False):
-            self._ipc_keyword(f"windowrule[{rule_name}]:pseudo true")
+            rule["pseudo"] = True
         if client.get("pinned", False):
-            self._ipc_keyword(f"windowrule[{rule_name}]:pin true")
+            rule["pin"] = True
 
         fs = client.get("fullscreenClient", client.get("fullscreen", 0))
         if fs in (1, 2):
-            self._ipc_keyword(f"windowrule[{rule_name}]:fullscreen true")
+            rule["fullscreen"] = True
 
-        group_rule = self._group_rule(client)
-        if group_rule:
-            self._ipc_keyword(f"windowrule[{rule_name}]:{group_rule}")
+        grouped = client.get("grouped", [])
+        if len(grouped) > 1:
+            rule["group"] = "set"
 
-        self._transient_rules.append(rule_name)
-        self._ipc_dispatch(f"exec {command}")
-        self._dispatch_count += 1
+        return rule
 
     def dispatch_plugin_cmd(self, cmd: str, client: dict) -> None:
-        group_rule = self._group_rule(client)
-        if group_rule:
-            cmd = self._inject_exec_rule(cmd, group_rule)
-        self._ipc_dispatch(cmd)
+        command = self._command_from_exec_dispatch(cmd)
+        if command:
+            ws_target = self.ws_target(client.get("workspace", {}))
+            self._lua_exec_cmd(command, self._build_lua_exec_rules(client, ws_target))
+        else:
+            self._lua_dispatch(self._legacy_dispatch_to_lua(cmd))
         self._dispatch_count += 1
 
     def reposition(self, addr: str, saved: dict) -> None:
         ws = self.ws_target(saved.get("workspace", {}))
-        self._ipc_dispatch(f"movetoworkspacesilent {ws},address:{addr}")
+        self._lua_dispatch(
+            "hl.dsp.window.move("
+            + self._lua_window_args(addr, {"workspace": ws, "follow": False})
+            + ")"
+        )
 
         is_float = bool(saved.get("floating", False))
 
@@ -233,24 +310,48 @@ class HyprlandBackend:
 
         if not is_float:
             if fs in (1, 2):
-                self._ipc_dispatch(f"fullscreen {fs}")
+                self._lua_dispatch(
+                    "hl.dsp.window.fullscreen_state("
+                    + self._lua_window_args(addr, {"internal": fs, "client": fs})
+                    + ")"
+                )
             if saved.get("pinned", False):
-                self._ipc_dispatch(f"pin address:{addr}")
+                self._lua_dispatch(
+                    "hl.dsp.window.pin(" + self._lua_window_args(addr, {}) + ")"
+                )
             return
 
         start = time.monotonic()
         interval = 0.08
         while True:
-            self._ipc_dispatch(f"setfloating address:{addr}")
+            self._lua_dispatch(
+                "hl.dsp.window.float("
+                + self._lua_window_args(addr, {"action": "set"})
+                + ")"
+            )
             w, h = target_size
             x, y = target_pos
             if w > 0 and h > 0:
-                self._ipc_dispatch(f"resizewindowpixel exact {w} {h},address:{addr}")
-            self._ipc_dispatch(f"movewindowpixel exact {x} {y},address:{addr}")
+                self._lua_dispatch(
+                    "hl.dsp.window.resize("
+                    + self._lua_window_args(addr, {"x": w, "y": h, "exact": True})
+                    + ")"
+                )
+            self._lua_dispatch(
+                "hl.dsp.window.move("
+                + self._lua_window_args(addr, {"x": x, "y": y, "exact": True})
+                + ")"
+            )
             if fs in (1, 2):
-                self._ipc_dispatch(f"fullscreen {fs}")
+                self._lua_dispatch(
+                    "hl.dsp.window.fullscreen_state("
+                    + self._lua_window_args(addr, {"internal": fs, "client": fs})
+                    + ")"
+                )
             if saved.get("pinned", False):
-                self._ipc_dispatch(f"pin address:{addr}")
+                self._lua_dispatch(
+                    "hl.dsp.window.pin(" + self._lua_window_args(addr, {}) + ")"
+                )
 
             clients = self.get_clients()
             client = next((c for c in clients if c.get("address") == addr), None)
@@ -263,20 +364,40 @@ class HyprlandBackend:
                 break
             time.sleep(interval)
 
+    @staticmethod
+    def _command_from_exec_dispatch(cmd: str) -> str | None:
+        stripped = cmd.strip()
+        if not stripped.startswith("exec "):
+            return None
+        rest = stripped[len("exec ") :].lstrip()
+        if rest.startswith("["):
+            end = rest.find("]")
+            if end < 0:
+                return None
+            rest = rest[end + 1 :].lstrip()
+        return rest or None
+
+    @classmethod
+    def _legacy_dispatch_to_lua(cls, cmd: str) -> str:
+        stripped = cmd.strip()
+        if " " not in stripped:
+            return f"hl.dsp.{stripped}()"
+        dispatcher, arg = stripped.split(" ", 1)
+        return f"hl.dsp.{dispatcher}({cls._lua_quote(arg)})"
+
     def schedule_cleanup(self) -> None:
         if not self._transient_rules:
             return
 
         count = len(self._transient_rules)
 
-        def _cleanup(delay: float = 15.0) -> None:
-            time.sleep(delay)
-            try:
-                HyprctlWrapper._send("/reload config-only")
-            except Exception:
-                pass
-
-        threading.Thread(target=_cleanup, daemon=True).start()
+        subprocess.Popen(
+            ["sh", "-c", "sleep 15; hyprctl reload config-only >/dev/null 2>&1"],
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
+        )
         print(f"  ({count} transient rules — config reload in ~15s)")
 
     @staticmethod
@@ -290,11 +411,3 @@ class HyprlandBackend:
         if len(grouped) > 1:
             return "group set"
         return None
-
-    @staticmethod
-    def _inject_exec_rule(cmd: str, rule: str) -> str:
-        """Inject a rule into an ``exec [rules] command`` string."""
-        if cmd.startswith("exec ["):
-            idx = cmd.index("]")
-            return cmd[:idx] + "; " + rule + cmd[idx:]
-        return cmd

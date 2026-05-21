@@ -1,6 +1,5 @@
-"""Niri compositor backend for session management.
-Not working yet!!!!
-Implements the SessionBackend protocol using niri's IPC (niri msg --json).
+"""Niri compositor backend for session save/restore.
+Prototype support via niri msg --json.
 """
 
 import json

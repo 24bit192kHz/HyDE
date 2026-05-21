@@ -1,22 +1,13 @@
 #!/usr/bin/env python3
 """
-Hyprland session snapshot manager.
+Session snapshot manager for supported compositors.
 
-High-fidelity save/restore of window layouts via Hyprland IPC.
-Respects named workspaces, special workspaces, floating positions,
-and exact command-line reconstruction via a three-step pipeline
-(Flatpak → .desktop → /proc/cmdline with Electron filtering).
+Save and restore window layouts via IPC.
+Detects the current backend and stores snapshots per compositor.
 
 Usage:
-        session.py save                # snapshot → ~/.cache/hypr_session/default.json
-        session.py restore             # restore from the snapshot
-
-IMPORTANT:  Workspace dispatch uses a hybrid ID/name strategy:
-    - Positive ID (1, 2, …) = user-configured workspace → dispatch as ``id:N``
-        (stable across sessions, Hyprland applies the display name automatically).
-    - Negative ID (-1337, …) = named workspace → dispatch as ``name:X``
-        (negative IDs are ephemeral and differ each session).
-    - Special workspaces → ``special:name``.
+        session.py save
+        session.py restore
 """
 
 import configparser
@@ -283,10 +274,10 @@ def _resolve_command(
 
 
 def save(dest: Path, *, verbose: bool = False) -> None:
-    """Snapshot every Hyprland client into *dest*.
+    """Snapshot every open client into *dest*.
 
-    The raw ``hyprctl clients -j`` dict for each window is kept as-is;
-    debug keys from every resolution step are added:
+    The raw client dict for each window is kept as-is; debug keys from
+    every resolution step are added:
 
     *  ``_exe``          – absolute path from ``/proc/<pid>/exe``
     *  ``_cmdline``      – shell-safe command from ``/proc/<pid>/cmdline``

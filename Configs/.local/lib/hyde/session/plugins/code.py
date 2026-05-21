@@ -131,7 +131,7 @@ def build_restore_cmd(client: dict, ws_target: str) -> str | None:
     return f"exec [workspace {ws_target} silent] {base_cmd}"
 
 
-def live_match(saved: dict, live: dict) -> bool:
+def match_running(saved: dict, live: dict) -> bool:
     """Match VS Code windows by project name extracted from the title."""
     saved_project = saved.get("_p_project", "").lower()
     if not saved_project:

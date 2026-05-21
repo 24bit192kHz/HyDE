@@ -2,15 +2,11 @@ from __future__ import annotations
 import os
 from typing import Protocol
 
-"""Compositor backends for session management.
+"""Compositor backend interface and detection for session restore.
 
-Each backend implements the SessionBackend protocol, providing
-compositor-specific IPC for save/restore operations.
-
-To add a new compositor:
-    1. Create ``session/compositor/<name>.py``
-    2. Implement ``SessionBackend``
-    3. Add detection logic to ``detect()``
+Backends implement SessionBackend for save/restore via IPC.
+To add one, create session/compositor/<name>.py, implement SessionBackend,
+and extend detect().
 """
 
 
@@ -72,7 +68,6 @@ def detect() -> SessionBackend:
     """Auto-detect the running compositor and return its backend."""
     if os.getenv("HYPRLAND_INSTANCE_SIGNATURE"):
         from session.compositor.hyprland import HyprlandBackend
-
         return HyprlandBackend()
 
     def backend_short_name(backend: SessionBackend) -> str:

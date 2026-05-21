@@ -1,7 +1,4 @@
-"""Session manager for named session files (save, list, delete, etc).
-
-Handles named session snapshots for each compositor backend.
-"""
+"""Named session manager for supported compositor backends."""
 
 import argparse
 import os
@@ -15,7 +12,7 @@ from session.compositor import detect, backend_short_name
 def build_parser() -> "argparse.ArgumentParser":
     p = argparse.ArgumentParser(
         prog="session.py",
-        description="Snapshot-based session manager for Hyprland/Niri/etc.",
+        description="Snapshot manager for supported compositor backends.",
     )
     p.add_argument(
         "-v",
