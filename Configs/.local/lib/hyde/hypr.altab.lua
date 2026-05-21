@@ -1,13 +1,15 @@
-local lib_dir = os.getenv("LIB_DIR") or "."
-local v_require = dofile(lib_dir .. "/hyde/luautils/require.lua")
+
+local root = debug.getinfo(1, "S").source:match("^@(.*/)") or "./"
+package.path = package.path .. ";" .. root .. "?.lua;" .. root .. "?/init.lua;"
+require("luautils.init")
 
 local socket = require("socket.unix")
-local json = require("dkjson")
-local argparse = require "argparse"
+local json = require("luautils.json")
+local argparse = require("luautils.argparse")
 
 local parser = argparse("hyde-shell hypr.altab", "Hyprland Alt-Tab Switcher")
 parser:flag("--prev", "Switch to previous window in history")
-parser:flag("--notify", "Enable notifications (default)")
+parser:flag("--next", "Switch to next window in history (default)")
 parser:flag("--no-notify", "Disable notifications")
 parser:flag("--debug", "Enable debug logging")
 parser:flag("--clear", "Clear saved state")
@@ -16,7 +18,7 @@ parser:flag("--apply", "Apply last selection")
 local args = parser:parse()
 
 local DEBUG = args["debug"] or false
-local NOTIFY = args["notify"] or (not args["no-notify"])
+local NOTIFY = not args["no-notify"]
 local PREV = args["prev"] or false
 
 local PREVIEW_NEXT = tonumber(os.getenv("HYPR_ALTAB_PREVIEW_NEXT")) or -1
@@ -213,7 +215,7 @@ end
 
 local function focus_addr(addr)
     if addr and addr ~= "" then
-        hyprctl_raw("dispatch focuswindow address:" .. addr)
+        hyprctl_raw('dispatch hl.dsp.focus({ window = "address:' .. addr .. '" })')
     end
 end
 
@@ -338,9 +340,8 @@ local function main()
         addr = target,
         list = history,
         ts = os.time(),
-        applied = true
+        applied = false
     }
-    focus_addr(target)
     if CAPTURE then
         capture_preview(target)
     end

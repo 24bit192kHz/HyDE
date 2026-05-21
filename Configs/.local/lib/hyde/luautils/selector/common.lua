@@ -302,6 +302,7 @@ function M.run(module, opts)
             io.stderr:write("Error: " .. tostring(err) .. "\n")
             os.exit(1)
         end
+        os.execute("hyprctl reload >/dev/null 2>&1")
         print_item(item)
     elseif cli.select then
         if not module.list or #module.list == 0 then
