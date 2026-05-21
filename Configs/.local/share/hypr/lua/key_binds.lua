@@ -92,10 +92,19 @@ hl.bind(MOD .. " + Up", hl.dsp.focus({direction = "up"}), _F)
 _F = {description = "[Window Management|Change focus] focus down"}
 hl.bind(MOD .. " + Down", hl.dsp.focus({direction = "down"}), _F)
 
-_F = {description = "[Window Management|Change focus] cycle group"}
-hl.bind("ALT + TAB", hl.dsp.group.next(), _F)
+-- _F = {description = "[Window Management|Change focus] cycle group"}
+-- hl.bind("ALT + TAB", hl.dsp.group.next(), _F)
 
--- $d=[$wm|Resize Active Window]
+-- Window switcher
+-- Handles Alt Tab like Behavior like browser
+_F = {description = "[Window Management|alt-tab window switcher] cycle next", transparent = true}
+hl.bind("ALT+TAB", hl.dsp.exec_cmd(hyde.sh.altab("--next")), _F)
+_F = {description = "[Window Management|alt-tab window switcher] cycle previous", transparent = true}
+hl.bind("ALT+SHIFT+TAB", hl.dsp.exec_cmd(hyde.sh.altab("--prev")), _F)
+_F = {description = "[Window Management|alt-tab window switcher] switch", release = true, transparent = true}
+hl.bind("ALT + ALT_R", hl.dsp.exec_cmd(hyde.sh.altab("--apply")), _F)
+hl.bind("ALT + ALT_L", hl.dsp.exec_cmd(hyde.sh.altab("--apply")), _F)
+
 -- # Resize windows
 
 _F = {description = "[Window Management|Resize Active Window] resize window right", repeating = true}
@@ -366,3 +375,4 @@ end
 -- * For multiple dispatcher actions, wrap them in one function and bind that.
 -- * If you set `hyde.bind.dedup = false`, unbind duplicates manually.
 hyde.binds.dedup = true
+-- hyde.binds.dedup_fields = {}

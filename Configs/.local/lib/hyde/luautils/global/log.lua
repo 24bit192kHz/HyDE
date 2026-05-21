@@ -6,7 +6,6 @@ local log = {}
 log.usecolor = true
 log.outfile = nil
 log.level = 'info'
-log.backend = 'console'
 
 local modes = {
   { name = 'trace', color = '\27[34m' },
@@ -22,27 +21,11 @@ for i, v in ipairs(modes) do
   levels[v.name] = i
 end
 
-local lgi_ok, lgi = pcall(require, 'lgi')
-local lgi_log
-if lgi_ok then
-  pcall(function()
-    lgi_log = lgi.log.domain('hyde')
-  end)
-end
-
 local env_level = os.getenv('LOG_LEVEL')
 if env_level then
   env_level = env_level:lower()
   if levels[env_level] then
     log.level = env_level
-  end
-end
-
-local env_backend = os.getenv('LOG_BACKEND')
-if env_backend then
-  env_backend = env_backend:lower()
-  if env_backend == 'lgi' or env_backend == 'console' then
-    log.backend = env_backend
   end
 end
 
@@ -87,16 +70,12 @@ for i, x in ipairs(modes) do
     local info = debug.getinfo(2, 'Sl')
     local lineinfo = info.short_src .. ':' .. info.currentline
 
-    if lgi_log and log.backend == 'lgi' then
-      local line = string.format('%s %s: %s', nameupper, os.date('%H:%M:%S'), msg)
-      lgi_log.message('%s', line)
-    else
-      local prefix = string.format('%s[%-6s%s]\27[0m ',
-        log.usecolor and x.color or '',
-        nameupper,
-        os.date('%H:%M:%S'))
+    local prefix = string.format('%s[%-6s%s]\27[0m ',
+      log.usecolor and x.color or '',
+      nameupper,
+      os.date('%H:%M:%S'))
 
-      print(prefix .. lineinfo .. ': ' .. msg)
+    print(prefix .. lineinfo .. ': ' .. msg)
 
       if log.outfile then
         local fp = io.open(log.outfile, 'a')
@@ -109,6 +88,5 @@ for i, x in ipairs(modes) do
       end
     end
   end
-end
 
 return log
