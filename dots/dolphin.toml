@@ -1,17 +1,12 @@
-[global]
-owner = "khing"
-
 [dolphin]
 version = "0.1.0"
 owner = "The HyDE Project"
 action = "sync"
-actions = "sycn"
 
 [[dolphin.dependency]]
 yay = ["dolphin"]
 paru = ["dolphin"]
 dnf = ["dolphin"]
-
 
 [[dolphin.files]]
 source_root = "Configs"
@@ -30,7 +25,6 @@ action = "preserve"
 source_root = "Configs/.local/state"
 target_root = "${HOME}/.local/state"
 paths = "dolphinstaterc"
-
 
 [applications_menu]
 pre_command = "echo 'Sync applications menu'"
