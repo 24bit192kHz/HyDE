@@ -10,3 +10,9 @@ action = "preserve"
 source_root = "Configs/.config/hypr"
 target_root = "${XDG_CONFIG_HOME}/hypr"
 paths = "hyprlock.conf"
+
+[[hyprlock.files]]
+action = "sync"
+source_root = "Configs/.local/share/hypr"
+target_root = "${XDG_DATA_HOME}/hypr"
+paths = ["hyprlock.conf", "hyprlock-fingerprint.conf"]
