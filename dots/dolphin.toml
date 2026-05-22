@@ -14,7 +14,6 @@ target_root = "${HOME}"
 paths = [
     ".config/dolphinrc",
     ".config/kdeglobals",
-    ".config/menus/applications.menu",
     ".local/share/dolphin",
     ".local/share/kio/servicemenus/hydewallpaper.desktop",
     ".local/share/kxmlgui5/dolphin",
