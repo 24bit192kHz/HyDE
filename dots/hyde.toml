@@ -16,14 +16,13 @@ action = "sync"
 source_root = "Configs/.local/lib"
 target_root = "${HOME}/.local/lib"
 paths = "hyde"
-ignore_paths = [".*", "__pycache__" ]
+ignore_paths = [".*", "__pycache__"]
 
 # [[hyde.files]]
 # action = "sync"
 # source_root = "Configs/.local/share"
 # target_root = "${XDG_DATA_HOME}"
 # paths = ["icons/Wallbash-Icon", "themes/Wallbash-Gtk"]
-
 [[hyde.files]]
 clean_target = true
 action = "sync"
@@ -35,7 +34,15 @@ paths = "hyde"
 action = "sync"
 source_root = "Configs/.config"
 target_root = "${XDG_CONFIG_HOME}"
-paths = ["gtk-3.0", "Kvantum", "nwg-look", "qt5ct", "qt6ct", "xsettingsd"]
+paths = [
+    "gtk-3.0",
+    "Kvantum",
+    "nwg-look",
+    "qt5ct",
+    "qt6ct",
+    "xsettingsd",
+    "kdeglobals",
+]
 
 [[hyde.files]]
 action = "sync"
@@ -61,7 +68,6 @@ paths = "config.toml"
 # source_root = "Configs/.config/systemd"
 # target_root = "${XDG_CONFIG_HOME}/systemd"
 # paths = "user"
-
 [[hyde.files]]
 action = "sync"
 source_root = "Configs/.config/uwsm"

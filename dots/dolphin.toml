@@ -13,7 +13,6 @@ source_root = "Configs"
 target_root = "${HOME}"
 paths = [
     ".config/dolphinrc",
-    ".config/kdeglobals",
     ".local/share/dolphin",
     ".local/share/kio/servicemenus/hydewallpaper.desktop",
     ".local/share/kxmlgui5/dolphin",
