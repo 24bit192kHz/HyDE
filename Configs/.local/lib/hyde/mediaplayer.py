@@ -340,8 +340,10 @@ def poll_if_players(manager):
 
 def signal_handler(sig, frame):
     logger.debug("Received signal to stop, exiting")
-    os.write(sys.stdout.fileno(), b"\n")
-    os._exit(0)
+    sys.stdout.write("\n")
+    sys.stdout.flush()
+    logging.shutdown()
+    sys.exit(0)
 
 
 def parse_arguments():
