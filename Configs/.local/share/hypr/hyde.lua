@@ -23,7 +23,7 @@ local pkg_paths = {
 	hyde.path.share .. "/../hypr/lua/?.lua", -- Existing dir
 	hyde.path.state .. "/lua_env/share/lua/5.5/?.lua", -- virtual env for lua
 	hyde.path.state .. "/lua_env/share/lua/5.5/?/init.lua", -- virtual env for lua
-	hyde.path.config .. "/hypr/?.lua", -- expose main users config
+	hyde.path.config .. "/hypr/?.lua" -- expose main users config
 }
 
 package.path = package.path .. ";" .. table.concat(pkg_paths, ";") .. ";"
@@ -32,16 +32,11 @@ package.cpath = package.cpath .. ";" .. hyde.path.state .. "/lua_env/lib/lua/5.5
 -- Let's call it early so we can use it in other files
 require("hyde.utils")
 require("hyde.env")
-require("hyde.meta")
-require("hyde.ui")
+require("hyde.config")
 require("hyde.start")
-require("hyde.define")
 require("hyde.binds")
 require("hyde.dispatcher")
-require("hyde.animations")
-require("hyde.config")
 require("hyde.handlers")
--- require("hyde.hyprctl")
 
 -- * Variables
 require("variables")
@@ -53,12 +48,12 @@ require("window_rules")
 require("layer_rules")
 -- * Environment variable Setup
 require("env")
+--* Dynamic Stuff example theming and variable handlings
+require("dynamic")
 -- * Binds
 require("key_binds")
 -- * Event handlers for more DE like experience
 require("events")
---* Dynamic Stuff example theming and variable handlings
-require("dynamic")
 --* HyDE's startup overridable too!
 require("start_up")
 -- --* user now can have this file

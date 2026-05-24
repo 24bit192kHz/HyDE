@@ -8,7 +8,9 @@ if not hl then
     return animation
 end
 
-    hl.animation({leaf = "windowsIn", enabled = true, speed = 6, bezier = "quart", style = "slide"})
+hl.curve("quart", {type = "bezier", points = {{0.25, 1}, {0.5, 1}}})
+
+hl.animation({leaf = "windowsIn", enabled = true, speed = 6, bezier = "quart", style = "slide"})
 hl.animation({leaf = "windowsOut", enabled = true, speed = 6, bezier = "quart", style = "slide"})
 hl.animation({leaf = "windowsMove", enabled = true, speed = 6, bezier = "quart", style = "slide"})
 hl.animation({leaf = "fadeIn", enabled = true, speed = 6, bezier = "quart"})
@@ -22,7 +24,6 @@ hl.animation({leaf = "fadeDpms", enabled = true, speed = 6, bezier = "quart"})
 hl.animation({leaf = "workspacesIn", enabled = true, speed = 6, bezier = "quart"})
 hl.animation({leaf = "workspacesOut", enabled = true, speed = 6, bezier = "quart"})
 hl.animation({leaf = "specialWorkspace", enabled = true, speed = 6, bezier = "quart"})
-hl.curve("quart", {type = "bezier", points = {{0.25, 1}, {0.5, 1}}})
 hl.animation({leaf = "windows", enabled = true, speed = 6, bezier = "quart", style = "slide"})
 hl.animation({leaf = "border", enabled = true, speed = 6, bezier = "quart"})
 hl.animation({leaf = "borderangle", enabled = true, speed = 6, bezier = "quart"})

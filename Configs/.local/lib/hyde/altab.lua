@@ -12,9 +12,8 @@ loads state in the form of:
     { id = <focusHistoryID>, stableId = <stableId>, ts = <timestamp> }
 
 Compositor-specific lookup and focus logic must live in the backend adapter
-module loaded via require("altab.hypr").
+module loaded via require("altab.hyprland").
 ]]
-
 local json = require("luautils.json")
 local argparse = require("luautils.argparse")
 local logger = require("luautils.global.log")
@@ -26,17 +25,24 @@ parser:flag("--apply", "Apply saved window index (focus and clear state)")
 parser:flag("--no-notify", "Disable notifications")
 parser:flag("--no-capture", "Disable screenshot capture")
 parser:flag("--debug", "Enable debug logging")
+parser:flag("--log", "Enable file logging to XDG_RUNTIME_DIR/hyde-altab/log.txt")
 parser:flag("--clear", "Clear saved state")
 local args = parser:parse()
 
 local DEBUG = args["debug"] or false
-local NOTIFY = not args["no-notify"]
 local PREV = args["prev"] or false
 local NEXT = args["next"] or false
 local APPLY = args["apply"] or false
+local LOG = args["log"] or false
+local function shell_escape(s)
+    return "'" .. tostring(s):gsub("'", "'\\''") .. "'"
+end
+
+local append_log_file
 
 if DEBUG then
     logger.level = "debug"
+    logger.debug("[hyde-altab] debug mode enabled")
 end
 
 local action_count = (NEXT and 1 or 0) + (PREV and 1 or 0) + (APPLY and 1 or 0) + (args["clear"] and 1 or 0)
@@ -48,20 +54,28 @@ if action_count > 1 then
     parser:error("only one of --next, --prev, --apply, or --clear may be used")
 end
 
-local _capture_env = os.getenv("HYDE_ALTAB_CAPTURE")
-local CAPTURE = not args["no-capture"] and ((_capture_env == nil) or _capture_env == "1" or _capture_env == "true")
+local env_notify = os.getenv("ALTAB_NOTIFY")
+local DEFAULT_NOTIFY = (env_notify == nil) or env_notify == "1" or env_notify == "true"
+local NO_NOTIFY = args["no_notify"] or args["no-notify"]
+local NOTIFY = DEFAULT_NOTIFY and not NO_NOTIFY
+
+local env_capture = os.getenv("ALTAB_CAPTURE")
+local DEFAULT_CAPTURE = (env_capture == nil) or env_capture == "1" or env_capture == "true"
+local NO_CAPTURE = args["no_capture"] or args["no-capture"]
+local CAPTURE = DEFAULT_CAPTURE and not NO_CAPTURE
 
 local xdg_runtime = os.getenv("XDG_RUNTIME_DIR") or "/tmp"
 local state_dir = xdg_runtime .. "/hyde-altab"
 local state_file = state_dir .. "/state"
 local preview_dir = state_dir .. "/previews"
+local log_file_path = state_dir .. "/log.txt"
 
 local api_mod = nil
 local function load_api_module()
     if api_mod ~= nil then
         return api_mod
     end
-    local ok, mod = pcall(require, "altab.hypr")
+    local ok, mod = pcall(require, "altab.hyprland")
     if ok and type(mod) == "table" then
         api_mod = mod
     else
@@ -70,8 +84,34 @@ local function load_api_module()
     return api_mod
 end
 
+append_log_file = function(level, msg)
+    if not LOG then
+        return
+    end
+    os.execute("mkdir -p " .. shell_escape(state_dir))
+    local f = io.open(log_file_path, "a")
+    if not f then
+        return
+    end
+    local entry = string.format("%s [%s] %s\n", os.date("%Y-%m-%d %H:%M:%S"), level, tostring(msg))
+    f:write(entry)
+    f:close()
+end
+
+if DEBUG and LOG then
+    append_log_file("DEBUG", "[hyde-altab] debug mode enabled")
+end
+
 local function log(msg)
-    logger.info("[hyde-altab] %s", msg)
+    local formatted = string.format("[hyde-altab] %s", tostring(msg))
+    logger.info("%s", formatted)
+    append_log_file("INFO", formatted)
+end
+
+local function debug(msg)
+    local formatted = string.format("[hyde-altab] %s", tostring(msg))
+    logger.debug("%s", formatted)
+    append_log_file("DEBUG", formatted)
 end
 
 local function module_required()
@@ -151,15 +191,18 @@ end
 
 local function state_matches_client(saved, id_to_info, stableId_to_id)
     -- Determine the current focusHistoryID from saved state.
-    -- Prefer the saved id if it is still valid; otherwise fall back to stableId.
+    -- Prefer the stableId match first because numeric focusHistoryIDs can change.
     if type(saved) ~= "table" then
         return nil
     end
+    if type(saved.stableId) == "string" and saved.stableId ~= "" and stableId_to_id then
+        local stable_id = stableId_to_id[saved.stableId]
+        if stable_id then
+            return stable_id
+        end
+    end
     if type(saved.id) == "number" and id_to_info[saved.id] then
         return saved.id
-    end
-    if type(saved.stableId) == "string" and saved.stableId ~= "" and stableId_to_id then
-        return stableId_to_id[saved.stableId]
     end
     return nil
 end
@@ -174,7 +217,7 @@ local function index_of(tbl, val)
 end
 
 -- Capture helpers that use prebuilt id_to_info
-local function capture_preview_bg_with_info(id, id_to_info)
+local function capture_toplevel(id, id_to_info)
     if not CAPTURE then
         return
     end
@@ -185,20 +228,6 @@ local function capture_preview_bg_with_info(id, id_to_info)
     os.execute("mkdir -p " .. shell_escape(preview_dir))
     local path = preview_path(info.stableId, info.address)
     local cmd = "grim -T " .. shell_escape(info.stableId) .. " " .. shell_escape(path) .. " >/dev/null 2>&1 &"
-    os.execute(cmd)
-end
-
-local function capture_preview_block_with_info(id, id_to_info)
-    if not CAPTURE then
-        return
-    end
-    local info = id_to_info and id_to_info[id]
-    if not info or info.stableId == "" then
-        return
-    end
-    os.execute("mkdir -p " .. shell_escape(preview_dir))
-    local path = preview_path(info.stableId, info.address)
-    local cmd = "grim -T " .. shell_escape(info.stableId) .. " " .. shell_escape(path) .. " >/dev/null 2>&1"
     os.execute(cmd)
 end
 
@@ -215,7 +244,8 @@ local function notify_for_id_with_info(id, id_to_info)
     local klass = info.class or "unknown"
     local ws = info.workspace or "?"
     local body = title .. "\n" .. klass .. "  •  " .. ws
-    local icon = file_exists(preview_path(info.stableId, info.address)) and preview_path(info.stableId, info.address) or nil
+    local icon =
+        file_exists(preview_path(info.stableId, info.address)) and preview_path(info.stableId, info.address) or nil
     local cmd = "notify-send " .. shell_escape(klass) .. " " .. shell_escape(body) .. " -t 2000 -r 6"
     if icon then
         cmd = cmd .. " -i " .. shell_escape(icon)
@@ -309,23 +339,42 @@ local function main()
         focus_window(focus_id, info)
 
         if CAPTURE then
-            capture_preview_block_with_info(focus_id, id_to_info)
+            -- Use background capture on apply so the script does not block if
+            -- the preview tool waits or fails on a stableId target.
+            capture_toplevel(focus_id, id_to_info)
         end
 
+        -- Preserve the applied window state for tracking into the next cycle.
+        write_state_entry(0, info.stableId)
+        log("apply: preserved state with stableId=" .. tostring(info.stableId))
+
         cleanup_orphan_previews_with_info(id_to_info)
-        remove_state()
         return
     end
 
     local saved = read_state()
-    local start_id = ids[1]
+    local start_id = current_id or ids[1]
+    local valid_saved_id = nil
     if saved then
-        local valid_saved_id = state_matches_client(saved, id_to_info, stableId_to_id)
+        valid_saved_id = state_matches_client(saved, id_to_info, stableId_to_id)
         if valid_saved_id then
             start_id = valid_saved_id
         else
-            log("saved state invalid or stale; reset to first active focusHistoryID")
+            log("saved state invalid or stale; reset to current active focusHistoryID")
+            remove_state()
+            start_id = current_id or ids[1]
         end
+    end
+
+    if DEBUG then
+        logger.debug(
+            "altab: current_id=%s saved_id=%s saved_stableId=%s valid_saved_id=%s start_id=%s",
+            tostring(current_id),
+            tostring(saved and saved.id),
+            tostring(saved and saved.stableId),
+            tostring(valid_saved_id),
+            tostring(start_id)
+        )
     end
 
     local start_idx = index_of(ids, start_id) or 1
@@ -349,7 +398,7 @@ local function main()
     log("saved id=" .. tostring(target_id) .. " stableId=" .. tostring(info.stableId))
 
     if info and not file_exists(preview_path(info.stableId, info.address)) then
-        capture_preview_bg_with_info(target_id, id_to_info)
+        capture_toplevel(target_id, id_to_info)
     end
 
     if NOTIFY then

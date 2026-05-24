@@ -12,14 +12,13 @@ dependencies = [
     "PyQt6",
     "pyprland==3.3.1",
     "hererocks>=0.25.1",
-    "gem>=0.1.12",
-    "pre-commit>=4.6.0",
     "websockets>=16.0",
     "xdg-prefs",
 ]
 
 [project.optional-dependencies]
 amd = ["pyamdgpuinfo"]
+dev = [ "prek>=0.4.1" ]
 
 [tool.ruff]
 line-length = 100

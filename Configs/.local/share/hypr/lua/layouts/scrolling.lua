@@ -17,7 +17,6 @@ hl.config({
 		follow_min_visible = 0.10,
 		-- direction = "down",
 		explicit_column_widths = "0.1, 0.333, 0.5, 0.667, 0.9",
-		focus_fit_method = 0,
 	},
 })
 
@@ -45,6 +44,19 @@ _F = { description = "[Scrolling] swap current column right" }
 hl.bind("ALT + I", hl.dsp.layout("swapcol r"), _F)
 _F = { description = "[Scrolling] promote focused window to its own column" }
 hl.bind("ALT + U", hl.dsp.layout("promote"), _F)
+
+_F = { description = "[Scrolling] fit active window" }
+hl.bind("ALT + F", hl.dsp.layout("fit active"), _F)
+_F = { description = "[Scrolling] fit visible windows" }
+hl.bind("ALT + SHIFT + F", hl.dsp.layout("fit visible"), _F)
+_F = { description = "[Scrolling] toggle scroll inhibition" }
+hl.bind("ALT + Z", hl.dsp.layout("inhibit_scroll"), _F)
+_F = { description = "[Scrolling] expel window to dedicated column" }
+hl.bind("ALT + O", hl.dsp.layout("expel"), _F)
+_F = { description = "[Scrolling] consume window into previous column" }
+hl.bind("ALT + SLASH", hl.dsp.layout("consume"), _F)
+_F = { description = "[Scrolling] consume or expel window" }
+hl.bind("ALT + M", hl.dsp.layout("consume_or_expel prev"), _F)
 
 hl.gesture({
 	fingers = 4,

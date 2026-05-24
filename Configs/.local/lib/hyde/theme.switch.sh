@@ -126,8 +126,8 @@ source "$SHARE_DIR/hyde/env-theme"
 if [[ -r $HYPRLAND_CONFIG ]]; then
     # TODO convert to func
     if [[ -n $HYPRLAND_INSTANCE_SIGNATURE ]]; then
-        case "$HYDE_HYPRLAND_LUA" in
-        1)
+        case "$HYPRLAND_CONFIG" in
+        *.lua)
             hyprctl eval 'hl.config({misc = {disable_autoreload = true}})'
             ;;
         *)
@@ -138,7 +138,7 @@ if [[ -r $HYPRLAND_CONFIG ]]; then
     # TODO convert to func
     if [[ -r "$HYDE_THEME_DIR/hypr.theme" ]]; then
 
-        if [[ "$HYDE_HYPRLAND_LUA" == "1" ]]; then
+        if [[ "${HYPRLAND_CONFIG##*.}" == "lua" ]]; then
             print_log -sec "theme" -stat "dump" "hypr.theme to lua"
             hyq --dump "$HYDE_THEME_DIR/hypr.theme" --schema "$XDG_DATA_HOME/hypr/schema/hyprland-lua.json" --export lua >"$XDG_STATE_HOME/hyde/lua_state/hypr_theme.lua"
         else

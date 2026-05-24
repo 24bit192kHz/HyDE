@@ -40,6 +40,7 @@ end
 
 local floating = regex.compile{
   class = {
+    "hyprland-share-picker",
     "blueman-manager",
     "pavucontrol-qt",
     "com\\.gabm\\.satty",
@@ -121,10 +122,19 @@ local modals = regex.compile{
 
 -- Consolidated floating rules (includes dialogs, portal dialogs, popups, dolphin dialogs)
 hl.window_rule({
-  name = "hyde_floating",
+  name = "hyde_floating_class",
   tag = "+hyde_floating",
   match = {
     class = floating.class,
+  },
+  float = true,
+  -- center = true,
+})
+
+hl.window_rule({
+  name = "hyde_floating_title",
+  tag = "+hyde_floating",
+  match = {
     title = floating.title,
   },
   float = true,
@@ -139,7 +149,6 @@ hl.window_rule({
     title = pinned.title,
   },
   float = true,
-  keep_aspect_ratio = true,
   move = "(monitor_w*0.73) (monitor_h*0.72)",
   size = "(monitor_w*0.25) (monitor_h*0.25)",
   pin = true,

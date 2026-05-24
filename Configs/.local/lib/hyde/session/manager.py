@@ -20,6 +20,11 @@ def build_parser() -> "argparse.ArgumentParser":
         dest="verbose",
         help="Show debug output for commands",
     )
+    p.add_argument(
+        "--debug",
+        action="store_true",
+        help="Show debug output for commands",
+    )
     sub = p.add_subparsers(dest="action", required=True)
 
     sp = sub.add_parser("save", help="Take a session snapshot (optionally named)")
@@ -34,6 +39,11 @@ def build_parser() -> "argparse.ArgumentParser":
         action="store_true",
         help="Show debug output for save",
     )
+    sp.add_argument(
+        "--debug",
+        action="store_true",
+        help="Show debug output for save",
+    )
 
     rp = sub.add_parser("restore", help="Restore a saved snapshot (optionally named)")
     rp.add_argument(
@@ -44,6 +54,11 @@ def build_parser() -> "argparse.ArgumentParser":
     )
     rp.add_argument(
         "--verbose",
+        action="store_true",
+        help="Show debug output for restore",
+    )
+    rp.add_argument(
+        "--debug",
         action="store_true",
         help="Show debug output for restore",
     )
@@ -102,6 +117,7 @@ def save_named(name: str = "latest") -> Path:
     save = session_mod.save
     backend = detect()
     dest = _session_dir(backend) / f"{name}.json"
+    logger.debug("Destination snapshot path: %s", dest)
     save(dest)
     logger.info("Saved session '%s'", name)
     return dest

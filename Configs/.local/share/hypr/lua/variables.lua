@@ -37,7 +37,7 @@ hyde.start = hyde.start or {}
 
 hyde.start.dbus_share_picker("dbus-update-activation-environment --systemd " .. systemd_env_str) -- for XDPH
 hyde.start.systemd_share_picker("systemctl --user import-environment " .. systemd_env_str) -- for XDPH ( redundant with the first one )
-hyde.start.xdg_portal_reset("hyde-shell resetxdgportal.sh") -- for XDPH
+hyde.start.xdg_portal_reset("hyde-shell resetxdgportal.lua") -- for XDPH
 hyde.start.auth_dialogue("hyde-shell app -t " .. svc .. " -- polkitkdeauth.sh")
 hyde.start.idle_daemon("hyde-shell app -u " .. unt .. "-idle.service -t "  .. svc .. " -- hypridle")
 hyde.start.blue_light_filter_daemon("hyde-shell app -u " .. unt .. "-blue-light-filter.service -t " .. svc .. " -- hyprsunset")
@@ -53,45 +53,47 @@ hyde.start.applet_removable_media("hyde-shell app -u " .. unt .. "-removable-med
 hyde.start.applet_bluetooth("hyde-shell app -u " .. unt .. "-bluetooth-applet.service -t "  .. svc .. " -- blueman-applet")
 hyde.start.hyde_config("hyde-shell app -u " .. unt .. "-config-watcher.service -t "  .. svc .. " -- config.lua")
 
--- UI stuff
-hyde.ui = hyde.ui or {}
 
-
--- Themes (assign to hyde.ui)
-hyde.ui.hyde_theme = "HyDE"
-hyde.ui.gtk_theme = "Wallbash-Gtk"
-hyde.ui.icon_theme = "Tela-circle-dracula"
-hyde.ui.color_scheme = "prefer-dark"
-hyde.ui.button_layout = "" -- colon separated list of buttons
+-- Themes (assign to hyde.config.ui)
+hyde.config.ui.hyde_theme = "HyDE"
+hyde.config.ui.gtk_theme = "Wallbash-Gtk"
+hyde.config.ui.icon_theme = "Tela-circle-dracula"
+hyde.config.ui.color_scheme = "prefer-dark"
+hyde.config.ui.button_layout = "" -- colon separated list of buttons
 
 -- Cursor
-hyde.ui.cursor_theme = "Bibata-Modern-Ice"
-hyde.ui.cursor_size = 24
+hyde.config.ui.cursor_theme = "Bibata-Modern-Ice"
+hyde.config.ui.cursor_size = 24
 
 -- Fonts
-hyde.ui.font = "Cantarell"
-hyde.ui.font_size = 10
-hyde.ui.document_font = "Cantarell"
-hyde.ui.document_font_size = 10
-hyde.ui.monospace_font = "CaskaydiaCove Nerd Font Mono"
-hyde.ui.monospace_font_size = 9
-hyde.ui.notification_font = "Mononoki Nerd Font Mono"
-hyde.ui.bar_font = "JetBrainsMono Nerd Font"
-hyde.ui.menu_font = "JetBrainsMono Nerd Font"
-hyde.ui.font_antialiasing = "rgba"
-hyde.ui.font_hinting = ""
+hyde.config.ui.font = "Cantarell"
+hyde.config.ui.font_size = 10
+hyde.config.ui.document_font = "Cantarell"
+hyde.config.ui.document_font_size = 10
+hyde.config.ui.monospace_font = "CaskaydiaCove Nerd Font Mono"
+hyde.config.ui.monospace_font_size = 9
+hyde.config.ui.notification_font = "Mononoki Nerd Font Mono"
+hyde.config.ui.bar_font = "JetBrainsMono Nerd Font"
+hyde.config.ui.menu_font = "JetBrainsMono Nerd Font"
+hyde.config.ui.font_antialiasing = "rgba"
+hyde.config.ui.font_hinting = ""
 
 -- Extra Themes
-hyde.ui.code_theme = ""
-hyde.ui.sddm_theme = ""
+hyde.config.ui.code_theme = ""
+hyde.config.ui.sddm_theme = ""
 
 
--- Default values
-hyde.define = hyde.define or {}
-hyde.define.mod = "SUPER"
-hyde.define.quickapps = ""
-hyde.define.browser = "hyde-shell open --fall firefox web-browser"
-hyde.define.editor = "hyde-shell open --fall code-oss code-editor"
-hyde.define.explorer = "hyde-shell open --fall dolphin file-manager"
-hyde.define.terminal = "hyde-shell app -T"
-hyde.define.lockscreen = "hyde-shell lock-session"
+-- Apps and launchers
+hyde.config.app.quickapps = nil
+hyde.config.app.browser = "hyde-shell open --fall firefox web-browser"
+hyde.config.app.editor = "hyde-shell open --fall code-oss code-editor"
+hyde.config.app.explorer = "hyde-shell open --fall dolphin file-manager"
+hyde.config.app.terminal = "hyde-shell app -T"
+hyde.config.app.lockscreen = "hyde-shell lock-session"
+
+
+-- Mod keys
+hyde.config.modifiers.main = "SUPER"
+hyde.config.modifiers.shift = "SHIFT"
+hyde.config.modifiers.alt = "ALT"
+hyde.config.modifiers.ctrl = "CTRL"

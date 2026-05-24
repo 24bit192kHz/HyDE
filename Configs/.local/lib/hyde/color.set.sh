@@ -4,8 +4,8 @@
 if [[ -n $HYPRLAND_INSTANCE_SIGNATURE ]]; then
     # TODO convert to func
     if [[ -n $HYPRLAND_INSTANCE_SIGNATURE ]]; then
-        case "$HYDE_HYPRLAND_LUA" in
-        1)
+        case "$HYPRLAND_CONFIG" in
+        *.lua)
             hyprctl eval 'hl.config({misc = {disable_autoreload = true}})'
             ;;
         *)

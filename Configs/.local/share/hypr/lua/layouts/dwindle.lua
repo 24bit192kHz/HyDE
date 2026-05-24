@@ -28,7 +28,6 @@ hl.bind("ALT + L", hl.dsp.layout("splitratio +0.1"), {description = "[Dwindle] i
 hl.bind("ALT + U", hl.dsp.layout("movetoroot"), {description = "[Dwindle] move focused window to root subtree"})
 hl.bind("ALT + Y", hl.dsp.layout("preselect l"), {description = "[Dwindle] preselect left/top split"})
 hl.bind("ALT + I", hl.dsp.layout("preselect r"), {description = "[Dwindle] preselect right/bottom split"})
-hl.bind("ALT + P", hl.dsp.window.pseudo(), {description = "[Dwindle] toggle split"})
 
 hl.gesture(
     {

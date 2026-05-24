@@ -1,6 +1,9 @@
-local _def = hyde.define
-local MOD = _def.mod
+-- vars for easy access
+local _apps = hyde.config.app
+local MOD = hyde.config.modifiers.main
 local _F
+
+-- Functions for some multi bind actions
 
 local cycle_fullscreen = function()
     local active_window = assert(hl.get_active_window(), "No active window to toggle fullscreen")
@@ -37,28 +40,32 @@ local togglefloating = function()
 end
 
 _F = {description = "[Launcher|Apps] terminal emulator"}
-hl.bind(MOD .. " + T", hl.dsp.exec_cmd(_def.terminal), _F)
+hl.bind(MOD .. " + T", hl.dsp.exec_cmd(_apps.terminal), _F)
 _F = {description = "[Launcher|Apps] dropdown terminal"}
 hl.bind(MOD .. " + grave", hl.dsp.exec_cmd("hyde-shell pypr toggle console"), _F)
 _F = {description = "[Launcher|Apps] file explorer"}
-hl.bind(MOD .. " + E", hl.dsp.exec_cmd(_def.explorer), _F)
+hl.bind(MOD .. " + E", hl.dsp.exec_cmd(_apps.explorer), _F)
 _F = {description = "[Launcher|Apps] browser"}
-hl.bind(MOD .. " + B", hl.dsp.exec_cmd(_def.browser), _F)
+hl.bind(MOD .. " + B", hl.dsp.exec_cmd(_apps.browser), _F)
 _F = {description = "[Launcher|Apps] text editor"}
-hl.bind(MOD .. " + C", hl.dsp.exec_cmd(_def.editor), _F)
+hl.bind(MOD .. " + C", hl.dsp.exec_cmd(_apps.editor), _F)
 _F = {description = "[Launcher|Apps] system monitor"}
 hl.bind("CTRL + SHIFT + ESCAPE", hl.dsp.exec_cmd("hyde-shell system.monitor.sh"), _F)
 
 local _wm = "Window Management"
 _F = {description = "[Window Management] close focused window"}
 hl.bind(MOD .. " + Q", hl.dsp.window.close(), _F)
-hl.bind(MOD .. "+ ALT  + F4", hl.dsp.window.close(), _F)
+_F = {description = "[Window Management] kill focused window"}
+hl.bind(MOD .. "+ ALT  + F4", hl.dsp.window.kill(), _F)
 _F = {description = "[Window Management] exit hyprland session"}
 hl.bind("CTRL + Delete", hl.dsp.exit(), _F)
 _F = {description = "[Window Management] toggle float true"}
 hl.bind(MOD .. " + W", hl.dsp.window.float({action = "toggle"}), _F)
 _F = {description = "[Window Management] toggle group"}
 hl.bind(MOD .. " + G", hl.dsp.group.toggle(), _F)
+_F = {description = "[Window Management] set a window’s pseudotiling state"}
+hl.bind("ALT + P", hl.dsp.window.pseudo(), _F)
+
 
 -- bindd = $mainMod, G, $d toggle group,exec, hydectl tabs
 _F = {description = "[Window Management] cycle fullscreen"}
@@ -105,7 +112,7 @@ _F = {description = "[Window Management|alt-tab window switcher] switch", releas
 hl.bind("ALT + ALT_R", hl.dsp.exec_cmd(hyde.sh.altab("--apply")), _F)
 hl.bind("ALT + ALT_L", hl.dsp.exec_cmd(hyde.sh.altab("--apply")), _F)
 
--- # Resize windows
+-- # Resize kwindows
 
 _F = {description = "[Window Management|Resize Active Window] resize window right", repeating = true}
 hl.bind(MOD .. " + EQUAL", hl.dsp.window.resize({x = 30, y = 0, relative = true}), _F)
@@ -265,7 +272,7 @@ end
 for i = 1, 10 do
     local key = (i == 10) and 90 or kp[i]
     hl.bind(
-        hyde.define.mod .. "+code:" .. key,
+        MOD .. "+code:" .. key,
         hl.dsp.focus({workspace = tostring(i + 10)}),
         {description = "WS " .. (i + 10)}
     )
@@ -287,7 +294,7 @@ end
 for i = 1, 10 do
     local key = (i == 10) and 90 or kp[i]
     hl.bind(
-        hyde.define.mod .. "+SHIFT+code:" .. key,
+        MOD .. "+SHIFT+code:" .. key,
         hl.dsp.window.move({workspace = tostring(i + 10)}),
         {description = "WS " .. (i + 10)}
     )

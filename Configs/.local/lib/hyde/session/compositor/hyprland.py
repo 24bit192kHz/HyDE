@@ -176,6 +176,35 @@ class HyprlandBackend:
     def get_monitors(self) -> list[dict]:
         return self._ipc_json("monitors")
 
+    def multiwindow_key(self, client: dict) -> tuple[int, int] | int | None:
+        pid = client.get("pid", 0)
+        if pid <= 0:
+            return None
+        ws_id = client.get("workspace", {}).get("id", 0)
+        return (pid, ws_id)
+
+    def append_multiwindow_metadata(self, rep: dict, client: dict) -> None:
+        candidates = rep.setdefault("_p_window_candidates", [])
+        candidates.append(
+            {
+                "address": client.get("address", ""),
+                "class": client.get("class", ""),
+                "initialClass": client.get("initialClass", ""),
+                "title": client.get("title", ""),
+                "initialTitle": client.get("initialTitle", ""),
+                "workspace": client.get("workspace", {}),
+                "at": client.get("at", [0, 0]),
+                "size": client.get("size", [0, 0]),
+                "floating": client.get("floating", False),
+                "fullscreen": client.get("fullscreen", 0),
+                "fullscreenClient": client.get("fullscreenClient", 0),
+                "pinned": client.get("pinned", False),
+                "pseudo": client.get("pseudo", False),
+                "grouped": client.get("grouped", []),
+                "monitor": client.get("monitor"),
+            }
+        )
+
     def ws_target(self, ws: dict) -> str:
         """Convert a workspace dict to Hyprland dispatcher syntax.
 
@@ -199,17 +228,67 @@ class HyprlandBackend:
             return name
         return f"name:{name}"
 
+    def restore_sort_key(self, client: dict) -> tuple:
+        workspace = client.get("workspace", {})
+        ws_id = workspace.get("id", 0)
+        at = client.get("at", [0, 0])
+        if not isinstance(at, (list, tuple)) or len(at) < 2:
+            at = [0, 0]
+        x = at[0] if isinstance(at[0], (int, float)) else 0
+        y = at[1] if isinstance(at[1], (int, float)) else 0
+        return (ws_id, x, y, client.get("_p_window_index", 0), client.get("focusHistoryID", 0))
+
+    def _monitor_info(self, client: dict) -> dict:
+        monitor_id = client.get("monitor")
+        if monitor_id is None:
+            return {}
+
+        for mon in self.get_monitors():
+            if mon.get("id") == monitor_id:
+                return mon
+            if str(mon.get("id")) == str(monitor_id):
+                return mon
+            if mon.get("name") == monitor_id:
+                return mon
+            if str(mon.get("name")) == str(monitor_id):
+                return mon
+
+        return {}
+
+    def _local_move(self, client: dict) -> tuple[int, int] | None:
+        at = client.get("at", [0, 0])
+        if not isinstance(at, (list, tuple)) or len(at) < 2:
+            return None
+        monitor = self._monitor_info(client)
+        if not monitor:
+            return (at[0], at[1])
+        mx = monitor.get("x", 0)
+        my = monitor.get("y", 0)
+        return (at[0] - mx, at[1] - my)
+
+    def _monitor_target(self, client: dict) -> str | None:
+        monitor = self._monitor_info(client)
+        if not monitor:
+            monitor_id = client.get("monitor")
+            return str(monitor_id) if monitor_id is not None else None
+        return monitor.get("name") or str(monitor.get("id", ""))
+
     def _build_lua_exec_rules(self, client: dict, ws_target: str) -> dict:
         """Build rules for ``hl.dsp.exec_cmd(command, rules)``."""
         rules: dict = {"workspace": f"{ws_target} silent"}
 
+        monitor_target = self._monitor_target(client)
+        if monitor_target is not None:
+            rules["monitor"] = monitor_target
+
         if client.get("floating", False):
-            x, y = client.get("at", [0, 0])
+            move = self._local_move(client)
             w, h = client.get("size", [0, 0])
             rules["float"] = True
             if w > 0 and h > 0:
                 rules["size"] = [w, h]
-            rules["move"] = [x, y]
+            if move is not None:
+                rules["move"] = [move[0], move[1]]
 
         if client.get("pseudo", False):
             rules["pseudo"] = True
@@ -251,21 +330,25 @@ class HyprlandBackend:
         self._ipc_eval(f"hl.window_rule({self._lua_table(rule)})")
         return True
 
-    @classmethod
-    def _lua_window_rule(cls, rule_name: str, client: dict, ws_target: str) -> dict:
+    def _lua_window_rule(self, rule_name: str, client: dict, ws_target: str) -> dict:
         rule = {
             "name": rule_name,
             "match": {"initial_class": client.get("initialClass", "")},
             "workspace": f"{ws_target} silent",
         }
 
+        monitor_target = self._monitor_target(client)
+        if monitor_target is not None:
+            rule["monitor"] = monitor_target
+
         if client.get("floating", False):
-            x, y = client.get("at", [0, 0])
+            move = self._local_move(client)
             w, h = client.get("size", [0, 0])
             rule["float"] = True
             if w > 0 and h > 0:
                 rule["size"] = f"{w} {h}"
-            rule["move"] = f"{x} {y}"
+            if move is not None:
+                rule["move"] = f"{move[0]} {move[1]}"
 
         if client.get("pseudo", False):
             rule["pseudo"] = True
@@ -309,6 +392,14 @@ class HyprlandBackend:
         fs = saved.get("fullscreenClient", saved.get("fullscreen", 0))
 
         if not is_float:
+            x, y = target_pos
+            if x is not None and y is not None:
+                self._lua_dispatch(
+                    "hl.dsp.window.move("
+                    + self._lua_window_args(addr, {"x": x, "y": y, "exact": True})
+                    + ")"
+                )
+
             if fs in (1, 2):
                 self._lua_dispatch(
                     "hl.dsp.window.fullscreen_state("

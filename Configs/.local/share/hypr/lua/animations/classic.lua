@@ -27,7 +27,10 @@ if not hl then
     return animation
 end
 
-local prod = hyde.anim.speed()
+local prod = function(ds)
+    return ds * hyde.config.anim.speed_multiplier
+end
+
 hl.curve("myBezier", {type = "bezier", points = {{0.05, 0.9}, {0.1, 1.05}}})
 hl.animation({leaf = "windows", enabled = true, speed = prod(7), bezier = "myBezier"})
 hl.animation({leaf = "windowsOut", enabled = true, speed = prod(7), bezier = "default", style = "popin 80%"})
