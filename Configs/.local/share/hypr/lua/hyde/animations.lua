@@ -1,9 +1,9 @@
 local M = {}
 
 local function get_multiplier()
-    local multiplier = hyde.meta.get("animation_speed_multiplier")
+    local multiplier = hyde.meta.get("animation_duration_scale")
     if multiplier == nil then
-        multiplier = hyde.meta.get("animation.speed_multiplier")
+        multiplier = hyde.meta.get("animation.duration_scale")
     end
 
     multiplier = tonumber(multiplier) or 1
@@ -14,15 +14,15 @@ local function get_multiplier()
     return multiplier
 end
 
-function M.set_speed_multiplier(value)
+function M.set_duration_scale(value)
     local v = tonumber(value)
     if v and v > 0 then
-        return hyde.meta.set("animation_speed_multiplier", v)
+        return hyde.meta.set("animation_duration_scale", v)
     end
     return nil
 end
 
-function M.get_speed_multiplier()
+function M.get_duration_scale()
     return get_multiplier()
 end
 

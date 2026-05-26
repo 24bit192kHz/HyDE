@@ -27,8 +27,9 @@ if not hl then
     return animation
 end
 
+-- prod utilizes the stored hyde.config.anim.duration_scale to dynamically change anim speed!
 local prod = function(ds)
-    return ds * hyde.config.anim.speed_multiplier
+    return ds * hyde.config.anim.duration_scale
 end
 
 hl.curve("myBezier", {type = "bezier", points = {{0.05, 0.9}, {0.1, 1.05}}})

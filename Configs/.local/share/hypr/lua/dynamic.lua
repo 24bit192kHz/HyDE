@@ -57,14 +57,16 @@ end
 -- Load the HyDE's ui config
 local state_ui = check_require("lua_state.ui") or {}
 hyde.config({ui = state_ui.ui or state_ui, wallbash = state_ui.wallbash or {}}, {skip_empty = true}) -- Merge the config safely and ignore blank strings from state UI
-check_require("lua_state.animations")
-check_require("lua_state.shaders")
-check_require("lua_state.layouts")
 
+-- Loads user config if exists
 local user_config_path = os.getenv("XDG_CONFIG_HOME") .. "/hyde/config.toml"
 if io.open(user_config_path) then
 	hyde.config.load_toml(user_config_path)
-end -- Loads user config if exists
+end
+
+check_require("lua_state.animations")
+check_require("lua_state.shaders")
+check_require("lua_state.layouts")
 
 hl.config(
 	{

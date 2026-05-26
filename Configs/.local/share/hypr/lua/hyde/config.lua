@@ -154,7 +154,7 @@ local default_config = {
 		edge_margin = {0.01}
 	},
 	anim = {
-		speed_multiplier = 1.0
+		duration_scale = 1.0
 	}
 }
 
@@ -170,7 +170,7 @@ hyde.config.modifiers = hyde.config.modifiers or {}
 --
 -- Direct table assignment:
 -- hyde.config.ui.groupbar_font = "JetBrainsMono Nerd Font"
--- hyde.config.anim.speed_multiplier = 0.9
+-- hyde.config.anim.duration_scale = 0.9
 -- hyde.config.window.float_follow_cursor.enabled = true
 --
 -- Merge a config block safely:
@@ -180,7 +180,7 @@ hyde.config.modifiers = hyde.config.modifiers or {}
 --         icon_theme = "Tela-circle-dracula",
 --     },
 --     anim = {
---         speed_multiplier = 0.9,
+--         duration_scale = 0.9,
 --     },
 --     other = {
 --         added = "some other config",
