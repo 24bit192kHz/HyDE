@@ -79,7 +79,7 @@ setmetatable(
 )
 
 -- * config.toml
-local ok, toml = pcall(require, "toml")
+local ok, toml = pcall(check_require, "toml")
 if not ok then
 	local message = "[HyDE] Hyprland does not detect TOML parser! Run: hyde-shell luainit"
 	if type(hl.exec_cmd) == "function" then
@@ -90,7 +90,8 @@ end
 
 function hyde.config.load_toml(filename)
 	if type(toml) ~= "table" or type(toml.parse) ~= "function" then
-		error("TOML parser not available")
+		-- error("TOML parser not available")
+		return -- Silent failure if TOML parser is not available, as this is an optional feature
 	end
 	local ok, data = pcall(toml.parse, filename)
 	if not ok then
