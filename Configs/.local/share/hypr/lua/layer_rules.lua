@@ -51,7 +51,7 @@ hl.layer_rule(
 hl.layer_rule(
   {
     name = "hyde_layer_no_anim",
-    animation = "popin",
+    no_anim = true,
     match = {namespace = "selection"}
   }
 )
