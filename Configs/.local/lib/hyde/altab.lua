@@ -160,7 +160,6 @@ local function build_clients_once()
     return mod.build_clients_once(DEBUG)
 end
 
--- State helpers
 local function write_state(tbl)
     os.execute("mkdir -p " .. shell_escape(state_dir))
     local f = io.open(state_file, "w")
@@ -190,8 +189,6 @@ local function read_state()
 end
 
 local function state_matches_client(saved, id_to_info, stableId_to_id)
-    -- Determine the current focusHistoryID from saved state.
-    -- Prefer the stableId match first because numeric focusHistoryIDs can change.
     if type(saved) ~= "table" then
         return nil
     end
@@ -216,7 +213,6 @@ local function index_of(tbl, val)
     return nil
 end
 
--- Capture helpers that use prebuilt id_to_info
 local function capture_toplevel(id, id_to_info)
     if not CAPTURE then
         return
@@ -231,7 +227,6 @@ local function capture_toplevel(id, id_to_info)
     os.execute(cmd)
 end
 
--- Notification using id_to_info
 local function notify_for_id_with_info(id, id_to_info)
     if not NOTIFY or not which("notify-send") then
         return
@@ -277,7 +272,6 @@ local function focus_window(id, info)
     return false
 end
 
--- Cleanup orphan previews using id_to_info
 local function cleanup_orphan_previews_with_info(id_to_info)
     if not id_to_info then
         return
@@ -339,12 +333,9 @@ local function main()
         focus_window(focus_id, info)
 
         if CAPTURE then
-            -- Use background capture on apply so the script does not block if
-            -- the preview tool waits or fails on a stableId target.
             capture_toplevel(focus_id, id_to_info)
         end
 
-        -- Preserve the applied window state for tracking into the next cycle.
         write_state_entry(0, info.stableId)
         log("apply: preserved state with stableId=" .. tostring(info.stableId))
 
