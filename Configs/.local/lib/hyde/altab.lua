@@ -349,6 +349,7 @@ local function main()
         log("apply: preserved state with stableId=" .. tostring(info.stableId))
 
         cleanup_orphan_previews_with_info(id_to_info)
+        remove_state()
         return
     end
 
