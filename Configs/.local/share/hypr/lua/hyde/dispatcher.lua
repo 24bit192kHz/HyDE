@@ -55,10 +55,19 @@ local function split_whitespace(str)
     return out
 end
 
+
+-- Shell-quote a single argument for safe command-line usage
+local function shell_quote(arg)
+    arg = tostring(arg)
+    -- Escape single quotes: ' -> '\''
+    arg = arg:gsub("'", "'\\''")
+    return "'" .. arg .. "'"
+end
+
 local function join_args(args)
     local out = {}
     for _, v in ipairs(args) do
-        out[#out + 1] = tostring(v)
+        out[#out + 1] = shell_quote(v)
     end
     return table.concat(out, " ")
 end

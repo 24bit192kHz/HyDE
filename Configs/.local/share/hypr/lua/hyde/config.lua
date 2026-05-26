@@ -10,17 +10,17 @@ hyde.config = hyde.config or {}
 -- ! Experimental! !
 hyde.get_config = hyde.get_config or {}
 function hyde.get_config(path)
-    local cur = hyde.config
-    for part in path:gmatch("[^.]+") do
-        cur = cur[part]
-    end
-    return cur
+	local cur = hyde.config
+	for part in path:gmatch("[^.]+") do
+		cur = cur[part]
+	end
+	return cur
 end
 
 function hyde.config.get(path)
-    return function()
-        return hyde.get_config(path)
-    end
+	return function()
+		return hyde.get_config(path)
+	end
 end
 
 -- We use this to make hyde.config reactive in binds and handlers
@@ -28,123 +28,134 @@ end
 -- without redeclaring binds and handlers, so we can change behavior on the fly by just changing config values!
 -- This is analoggus to `hyde.dsp.exec_cmd`
 function hyde.config.exec(path)
-    return function()
-        local cmd = hyde.get_config(path)
-        if type(cmd) ~= "string" or cmd == "" then
-            return
-        end
-        if type(hl.notification.create) == "function" then
-            hl.notification.create({
-                text = "Launching " .. cmd,
-                timeout = 1000,
-            })
-        end
-        if type(hl.dsp.exec_cmd) == "function" then
-            hl.dispatch(hl.dsp.exec_cmd(cmd))
-        end
-    end
+	return function()
+		local cmd = hyde.get_config(path)
+		if type(cmd) ~= "string" or cmd == "" then
+			return
+		end
+		if type(hl.notification.create) == "function" then
+			hl.notification.create(
+				{
+					text = "Launching " .. cmd,
+					timeout = 1000
+				}
+			)
+		end
+		if type(hl.dsp.exec_cmd) == "function" then
+			hl.dispatch(hl.dsp.exec_cmd(cmd))
+		end
+	end
 end
 
--- * Stable
+-- * Stable *
 
 local function merge_config(dest, src, opts)
-    for k, v in pairs(src) do
-        if type(v) == "table" and type(dest[k]) == "table" then
-            merge_config(dest[k], v, opts)
-        elseif opts and opts.skip_empty and (v == "" or v == nil) then
-            -- preserve existing destination value when source is empty
-        else
-            dest[k] = v
-        end
-    end
+	for k, v in pairs(src) do
+		if type(v) == "table" and type(dest[k]) == "table" then
+			merge_config(dest[k], v, opts)
+		elseif opts and opts.skip_empty and (v == "" or v == nil) then
+			-- preserve existing destination value when source is empty
+		else
+			dest[k] = v
+		end
+	end
 end
 
 function hyde.config.apply(cfg, opts)
-    if type(cfg) ~= "table" then
-        return hyde.config
-    end
-    merge_config(hyde.config, cfg, opts)
-    return hyde.config
+	if type(cfg) ~= "table" then
+		return hyde.config
+	end
+	merge_config(hyde.config, cfg, opts)
+	return hyde.config
 end
 
 setmetatable(
-    hyde.config,
-    {
-        __call = function(t, cfg, opts)
-            return hyde.config.apply(cfg, opts)
-        end
-    }
+	hyde.config,
+	{
+		__call = function(t, cfg, opts)
+			return hyde.config.apply(cfg, opts)
+		end
+	}
 )
 
 -- * config.toml
-local toml = require("lib.toml")
-
-function hyde.config.load_toml(filename)
-    local ok, data = pcall(toml.parse, filename)
-    if not ok then
-        error("Failed to parse TOML: " .. tostring(data))
-    end
-
-    if type(data) ~= "table" then
-        return hyde.config
-    end
-
-    local hyprland = data.hyprland
-    if type(hyprland) ~= "table" then
-        return hyde.config
-    end
-
-    return hyde.config.apply(hyprland)
+local ok, toml = pcall(require, "toml")
+if not ok then
+	local message = "[HyDE] Hyprland does not detect TOML parser! Run: hyde-shell luainit"
+	if type(hl.exec_cmd) == "function" then
+		hl.exec_cmd("hyprctl seterror 'rgba(c79bf0ff)' " .. message)
+	end
+	toml = nil
 end
 
+function hyde.config.load_toml(filename)
+	if type(toml) ~= "table" or type(toml.parse) ~= "function" then
+		error("TOML parser not available")
+	end
+	local ok, data = pcall(toml.parse, filename)
+	if not ok then
+		error("Failed to parse TOML: " .. tostring(data))
+	end
+
+	if type(data) ~= "table" then
+		return hyde.config
+	end
+
+	local hyprland = data.hyprland
+	if type(hyprland) ~= "table" then
+		return hyde.config
+	end
+
+	return hyde.config.apply(hyprland)
+end
 
 local default_config = {
-    ui = {
-        hyde_theme = nil,
-        -- gtk
-        gtk_theme = nil,
-        icon_theme = nil,
-        color_scheme = nil,
-        button_layout = nil,
-        -- Cursor
-        cursor_theme = nil,
-        cursor_size = nil,
-        -- Fonts
-        font = nil,
-        font_size = nil,
-        document_font = nil,
-        document_font_size = nil,
-        monospace_font = nil,
-        monospace_font_size = nil,
-        notification_font = nil,
-        bar_font = nil,
-        menu_font = nil,
-        font_antialiasing = nil,
-        font_hinting = nil,
-        -- Extra Themes
-        code_theme = nil,
-        sddm_theme = nil
-    },
-    wallbash = {
-        mode = "theme"
-    },
-    window = {
-        float_size_bounds = {
-            enabled = true,
-            scale = 0.95,
-            force_center = false
-        },
-        float_follow_cursor = {
-            enabled = true,
-            mode = "default"
-        }
-    },
-    monitor = {
-        edge_margin = {0.01}
-    },
-    anim = {
-        speed_multiplier = 1.0
-    }
+	ui = {
+		hyde_theme = nil,
+		-- gtk
+		gtk_theme = nil,
+		icon_theme = nil,
+		color_scheme = nil,
+		button_layout = nil,
+		-- Cursor
+		cursor_theme = nil,
+		cursor_size = nil,
+		-- Fonts
+		font = nil,
+		font_size = nil,
+		document_font = nil,
+		document_font_size = nil,
+		monospace_font = nil,
+		monospace_font_size = nil,
+		notification_font = nil,
+		bar_font = nil,
+		menu_font = nil,
+		font_antialiasing = nil,
+		font_hinting = nil,
+		-- Extra Themes
+		code_theme = nil,
+		sddm_theme = nil
+	},
+	wallbash = {
+		mode = "theme"
+	},
+	window = {
+		float_size_bounds = {
+			enabled = true,
+			scale = 0.95,
+			force_center = false
+		},
+		float_follow_cursor = {
+			enabled = true,
+			mode = "default"
+		}
+	},
+	monitor = {
+		edge_margin = {0.01}
+	},
+	anim = {
+		speed_multiplier = 1.0
+	}
 }
 
 hyde.config(default_config)

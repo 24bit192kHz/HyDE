@@ -1,51 +1,53 @@
 local color = check_require("lua_state.colors") or {}
 
 if next(color) then
-	hl.config({
-		general = {
-			col = {
-				active_border = { colors = { color._pry4_rgba, color._4xa1_rgba }, angle = 45 },
-				inactive_border = { colors = { color._pry1_rgba, color._pry2_rgba }, angle = 45 },
-			},
-		},
-		group = {
-			groupbar = {
-				enabled = true,
-				gradients = 1,
-				render_titles = 1,
-				font_weight_inactive = "normal",
-				font_weight_active = "semibold",
+	hl.config(
+		{
+			general = {
 				col = {
-					active = { colors = { color._pry3_rgba }, angle = 45 },
-					inactive = { colors = { color._pry1_rgba }, angle = 45 },
-					locked_active = { colors = { color._pry2_rgba }, angle = 45 },
-					locked_inactive = { colors = { color._pry4_rgba }, angle = 45 },
+					active_border = {colors = {color._pry4_rgba, color._4xa1_rgba}, angle = 45},
+					inactive_border = {colors = {color._pry1_rgba, color._pry2_rgba}, angle = 45}
+				}
+			},
+			group = {
+				groupbar = {
+					enabled = true,
+					gradients = 1,
+					render_titles = 1,
+					font_weight_inactive = "normal",
+					font_weight_active = "semibold",
+					col = {
+						active = {colors = {color._pry3_rgba}, angle = 45},
+						inactive = {colors = {color._pry1_rgba}, angle = 45},
+						locked_active = {colors = {color._pry2_rgba}, angle = 45},
+						locked_inactive = {colors = {color._pry4_rgba}, angle = 45}
+					},
+					text_color = "rgba(" .. color._txt3 .. "ee)",
+					text_color_inactive = "rgba(" .. color._txt1 .. "ee)",
+					blur = true,
+					font_size = hyde.config.ui.font_size,
+					font_family = hyde.config.ui.groupbar_font or hyde.config.ui.font -- fallback to main font if groupbar_font is not set
 				},
-				text_color = "rgba(" .. color._txt3 .. "ee)",
-				text_color_inactive = "rgba(" .. color._txt1 .. "ee)",
-				blur = true,
-				font_size = hyde.config.ui.font_size,
-				font_family = hyde.config.ui.groupbar_font or hyde.config.ui.font, -- fallback to main font if groupbar_font is not set
+				col = {
+					border_active = {colors = {color._pry4_rgba, color._pry2_rgba}, angle = 45},
+					border_inactive = {colors = {color._pry1_rgba, color._pry3_rgba}, angle = 45},
+					border_locked_active = {colors = {color._txt3_rgba, color._txt4_rgba}, angle = 45},
+					border_locked_inactive = {colors = {color._txt1_rgba, color._txt2_rgba}, angle = 45}
+				}
 			},
-			col = {
-				border_active = { colors = { color._pry4_rgba, color._pry2_rgba }, angle = 45 },
-				border_inactive = { colors = { color._pry1_rgba, color._pry3_rgba }, angle = 45 },
-				border_locked_active = { colors = { color._txt3_rgba, color._txt4_rgba }, angle = 45 },
-				border_locked_inactive = { colors = { color._txt1_rgba, color._txt2_rgba }, angle = 45 },
-			},
-		},
-		misc = {
-			font_family = hyde.config.ui.font,
-			background_color = color._pry1_rgba
-		},
-	})
+			misc = {
+				font_family = hyde.config.ui.font,
+				background_color = color._pry1_rgba
+			}
+		}
+	)
 else
 	local message = "[HyDE] Hyprland does not detect colors! Run: hyde-shell reload"
 	hl.exec_cmd("hyprctl seterror 'rgba(c79bf0ff)' " .. message)
 end
 --
 
--- Loads the them config from lua_state.
+-- Loads the theme config from lua_state.
 -- Note this is translated by hyprquery from hyprlang to lua
 local theme_config = check_require("lua_state.hypr_theme") or {}
 if theme_config then
@@ -54,52 +56,60 @@ end
 
 -- Load the HyDE's ui config
 local state_ui = check_require("lua_state.ui") or {}
-hyde.config({ ui = state_ui.ui or state_ui, wallbash = state_ui.wallbash or {} }, { skip_empty = true }) -- Merge the config safely and ignore blank strings from state UI
+hyde.config({ui = state_ui.ui or state_ui, wallbash = state_ui.wallbash or {}}, {skip_empty = true}) -- Merge the config safely and ignore blank strings from state UI
 check_require("lua_state.animations")
 check_require("lua_state.shaders")
 check_require("lua_state.layouts")
-hyde.config.load_toml(os.getenv("XDG_CONFIG_HOME") .. "/hyde/config.toml") -- Loads user config
 
-hl.config({
-	group = {
-		groupbar = {
-			font_size = hyde.config.ui.font_size,
-			font_family = hyde.config.ui.groupbar_font or hyde.config.ui.font, -- fallback to main font if groupbar_font is not set
+local user_config_path = os.getenv("XDG_CONFIG_HOME") .. "/hyde/config.toml"
+if io.open(user_config_path) then
+	hyde.config.load_toml(user_config_path)
+end -- Loads user config if exists
+
+hl.config(
+	{
+		group = {
+			groupbar = {
+				font_size = hyde.config.ui.font_size,
+				font_family = hyde.config.ui.groupbar_font or hyde.config.ui.font -- fallback to main font if groupbar_font is not set
+			}
 		},
-	},
-	misc = {
-		font_family = hyde.config.ui.font,
-	},
-})
+		misc = {
+			font_family = hyde.config.ui.font
+		}
+	}
+)
 
 local wallbash_mode = (hyde.config.wallbash and hyde.config.wallbash.mode) or "auto"
 if wallbash_mode ~= "theme" and next(color) then
-	hl.config({
-		general = {
-			col = {
-				active_border = { colors = { color._pry4_rgba, color._4xa1_rgba }, angle = 45 },
-				inactive_border = { colors = { color._pry1_rgba, color._pry2_rgba }, angle = 45 },
-			},
-		},
-		group = {
-			groupbar = {
+	hl.config(
+		{
+			general = {
 				col = {
-					active = { colors = { color._pry3_rgba }, angle = 45 },
-					inactive = { colors = { color._pry1_rgba }, angle = 45 },
-					locked_active = { colors = { color._pry2_rgba }, angle = 45 },
-					locked_inactive = { colors = { color._pry4_rgba }, angle = 45 },
+					active_border = {colors = {color._pry4_rgba, color._4xa1_rgba}, angle = 45},
+					inactive_border = {colors = {color._pry1_rgba, color._pry2_rgba}, angle = 45}
+				}
+			},
+			group = {
+				groupbar = {
+					col = {
+						active = {colors = {color._pry3_rgba}, angle = 45},
+						inactive = {colors = {color._pry1_rgba}, angle = 45},
+						locked_active = {colors = {color._pry2_rgba}, angle = 45},
+						locked_inactive = {colors = {color._pry4_rgba}, angle = 45}
+					},
+					text_color = "rgba(" .. color._txt3 .. "ee)",
+					text_color_inactive = "rgba(" .. color._txt1 .. "ee)"
 				},
-				text_color = "rgba(" .. color._txt3 .. "ee)",
-				text_color_inactive = "rgba(" .. color._txt1 .. "ee)",
-			},
-			col = {
-				border_active = { colors = { color._pry4_rgba, color._pry2_rgba }, angle = 45 },
-				border_inactive = { colors = { color._pry1_rgba, color._pry3_rgba }, angle = 45 },
-				border_locked_active = { colors = { color._txt3_rgba, color._txt4_rgba }, angle = 45 },
-				border_locked_inactive = { colors = { color._txt1_rgba, color._txt2_rgba }, angle = 45 },
-			},
-		},
-	})
+				col = {
+					border_active = {colors = {color._pry4_rgba, color._pry2_rgba}, angle = 45},
+					border_inactive = {colors = {color._pry1_rgba, color._pry3_rgba}, angle = 45},
+					border_locked_active = {colors = {color._txt3_rgba, color._txt4_rgba}, angle = 45},
+					border_locked_inactive = {colors = {color._txt1_rgba, color._txt2_rgba}, angle = 45}
+				}
+			}
+		}
+	)
 end
 -- Handle kb soon
 -- # HyDE Preparation

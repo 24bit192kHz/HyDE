@@ -17,17 +17,17 @@ hyde = hyde or {}
 hyde.path = require("lua.hyde.path")
 
 local pkg_paths = {
-	hyde.path.state .. "/?.lua", -- Lua state
-	hyde.path.lib .. "/?.lua", -- lib scripts
-	hyde.path.lib .. "/luautils/?.lua", -- lib scripts
-	hyde.path.share .. "/../hypr/lua/?.lua", -- Existing dir
-	hyde.path.state .. "/lua_env/share/lua/5.5/?.lua", -- virtual env for lua
-	hyde.path.state .. "/lua_env/share/lua/5.5/?/init.lua", -- virtual env for lua
+	hyde.path.state .. "/hyde/?.lua", -- Lua state
+	hyde.path.lib .. "/hyde/?.lua", -- lib scripts
+	hyde.path.lib .. "/hyde/luautils/?.lua", -- lib scripts
+	hyde.path.share .. "/hypr/lua/?.lua",
+	hyde.path.state .. "/hyde/lua_env/share/lua/5.5/?.lua", -- virtual env for lua
+	hyde.path.state .. "/hyde/lua_env/share/lua/5.5/?/init.lua", -- virtual env for lua
 	hyde.path.config .. "/hypr/?.lua" -- expose main users config
 }
 
 package.path = package.path .. ";" .. table.concat(pkg_paths, ";") .. ";"
-package.cpath = package.cpath .. ";" .. hyde.path.state .. "/lua_env/lib/lua/5.5/?.so" -- virtual env shared objects
+package.cpath = package.cpath .. ";" .. hyde.path.state .. "/hyde/lua_env/lib/lua/5.5/?.so" -- virtual env shared objects
 
 -- Let's call it early so we can use it in other files
 require("hyde.utils")

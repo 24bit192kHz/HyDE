@@ -6,39 +6,10 @@
 -- 2. Pinned windows (picture-in-picture, etc)
 -- 3. And common modals that are floating anyway but should be centered (file choosers, etc)
 
+local util = _G.hyde.utils
 
-local function is_nonempty_list(value)
- return type(value) == "table" and #value > 0
-end
-
-local function compile_pattern_list(list, anchored)
- if not is_nonempty_list(list) then
-  return nil
- end
-
- local pattern = table.concat(list, "|")
- if anchored then
-  pattern = "^(" .. pattern .. ")$"
- end
-
- return pattern
-end
-
-local regex = {}
-
-function regex.compile(spec)
- if type(spec) ~= "table" then
-  return {}
- end
-
- return {
-  class = compile_pattern_list(spec.class, true),
-  title = compile_pattern_list(spec.title, true),
-  initial_title = compile_pattern_list(spec.initial_title, true),
- }
-end
-
-local floating = regex.compile{
+local floating =
+  util.regex_compile({
   class = {
     "hyprland-share-picker",
     "blueman-manager",
@@ -57,7 +28,7 @@ local floating = regex.compile{
     "org\\.kde\\.dolphin",
     ".*dialog.*",
     "[Xx]dg-desktop-portal-gtk",
-    "org\\.freedesktop\\.impl\\.portal\\.desktop\\.(hyprland|gtk)",
+    "org\\.freedesktop\\.impl\\.portal\\.desktop\\.(hyprland|gtk)"
   },
   title = {
     "Progress Dialog — Dolphin",
@@ -75,20 +46,24 @@ local floating = regex.compile{
     ".*dialog.*",
     "Open File",
     "Volume Control",
-    "Save As.*",
-  },
+    "Save As.*"
+  }
 }
+)
 
-local pinned = regex.compile{
+local pinned =
+  util.regex_compile({
   title = {
-    "[Pp]icture[-\\s]?[Ii]n[-\\s]?[Pp]icture(.*)",
-  },
-}
+    "[Pp]icture[-\\s]?[Ii]n[-\\s]?[Pp]icture(.*)"
+  }
+},
+  true
+)
 
-
-local modals = regex.compile{
+local modals =
+  util.regex_compile({
   class = {
-    "pinentry-.*",
+    "pinentry-.*"
   },
   title = {
     "Choose Files",
@@ -96,77 +71,67 @@ local modals = regex.compile{
     "Save As.*",
     "File Operation Progress",
     "Authentication Required",
-    "File Upload.*",
+    "File Upload.*"
   },
   initial_title = {
     "Open File",
-    "Save As.*",
-  },
+    "Save As.*"
+  }
 }
-
--- hl.exec_cmd("echo " .. floating.class .. "> /tmp/floating.class")
--- hl.exec_cmd("echo " .. floating.title .. "> /tmp/floating.title")
--- hl.exec_cmd("echo " .. pinned.title .. "> /tmp/pinned.title")
--- hl.exec_cmd("echo " .. modals.class .. "> /tmp/modals.class")
--- hl.exec_cmd("echo " .. modals.title .. "> /tmp/modals.title")
--- hl.exec_cmd("echo " .. modals.initial_title .. "> /tmp/modals.initial_title")
-
--- # Fix floating dialogs
-
--- hl.notification.create({
---   text = floating.class,
---   timeout = 10000,
--- })
-
--- # Fix file chooser dialogs opening off-screen
+)
 
 -- Consolidated floating rules (includes dialogs, portal dialogs, popups, dolphin dialogs)
-hl.window_rule({
-  name = "hyde_floating_class",
-  tag = "+hyde_floating",
-  match = {
-    class = floating.class,
-  },
-  float = true,
-  -- center = true,
-})
+hl.window_rule(
+  {
+    name = "hyde_floating_class",
+    tag = "+hyde_floating",
+    match = {
+      class = floating.class
+    },
+    float = true
+  }
+)
 
-hl.window_rule({
-  name = "hyde_floating_title",
-  tag = "+hyde_floating",
-  match = {
-    title = floating.title,
-  },
-  float = true,
-  -- center = true,
-})
+hl.window_rule(
+  {
+    name = "hyde_floating_title",
+    tag = "+hyde_floating",
+    match = {
+      title = floating.title
+    },
+    float = true
+  }
+)
 
 -- Pinned windows
-hl.window_rule({
-  name = "hyde_pin",
-  tag = "+hyde_pin",
-  match = {
-    title = pinned.title,
-  },
-  float = true,
-  move = "(monitor_w*0.73) (monitor_h*0.72)",
-  size = "(monitor_w*0.25) (monitor_h*0.25)",
-  pin = true,
-})
-
+hl.window_rule(
+  {
+    name = "hyde_pin",
+    tag = "+hyde_pin",
+    match = {
+      title = pinned.title
+    },
+    float = true,
+    move = "(monitor_w*0.73) (monitor_h*0.72)",
+    size = "(monitor_w*0.25) (monitor_h*0.25)",
+    pin = true
+  }
+)
 
 -- Modals that strictly pinned,floats and centered for the best user experience (file choosers, etc)
 
-hl.window_rule({
-  name = "hyde_modals",
-  tag = "+hyde_modals",
-  match = {
-    class = modals.class,
-    title = modals.title,
-    initial_title = modals.initial_title,
-    modal = true,
-  },
-  float = true,
-  center = true,
-  pin = true,
-})
+hl.window_rule(
+  {
+    name = "hyde_modals",
+    tag = "+hyde_modals",
+    match = {
+      class = modals.class,
+      title = modals.title,
+      initial_title = modals.initial_title,
+      modal = true
+    },
+    float = true,
+    center = true,
+    pin = true
+  }
+)

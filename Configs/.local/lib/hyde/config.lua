@@ -385,6 +385,16 @@ local function write_lines_to_file(filename, lines)
     return true, nil
 end
 
+local function run_hyprctl_reload()
+    local ok, exit_type, exit_code = os.execute("hyprctl reload")
+    if not ok then
+        logError("hyprctl reload failed: %s %s", tostring(exit_type), tostring(exit_code))
+        return false
+    end
+    logInfo("hyprctl reload executed successfully")
+    return true
+end
+
 -- parse_config_files
 local function parse_config_files(tomlFile, envFile, hyprFile, hyprEnvFile, exportMode)
     local attr = lfs.attributes(tomlFile)
@@ -546,7 +556,9 @@ local function watch_file(tomlFile, envFile, hyprFile, hyprEnvFile, exportMode)
                         last_mod = mod
                         logInfo("Config file changed (reprocessing)")
                         sleep(0.05)
-                        parse_config_files(tomlFile, envFile, hyprFile, hyprEnvFile, exportMode)
+                        if parse_config_files(tomlFile, envFile, hyprFile, hyprEnvFile, exportMode) then
+                            run_hyprctl_reload()
+                        end
                     else
                         logDebug("Skipping event, within debounce interval")
                     end
