@@ -47,7 +47,7 @@ hyde.start.clipboard_persist("hyde-shell app -u " .. unt .. "-clipboard-persist.
 hyde.start.wallpaper("hyde-shell app -u " .. unt .. "-wallpaper.service -t "  .. svc .. " -- wallpaper.sh --start --global")
 hyde.start.bar("hyde-shell app -u " .. unt .. "-bar.scope -t "  .. scp .. " -- waybar.py --watch") -- waybar.py injects it itself as -u $unt.service :- therefore we use scope here to avoid conflicts
 hyde.start.notifications("hyde-shell app -u " .. unt .. "-notifications.service -t "  .. svc .. " -- dunst")
-hyde.start.battery_notify("hyde-shell app -u " .. unt .. "-battery-notify.service -t "  .. svc .. " -- batterynotify.sh")
+hyde.start.battery_notify("hyde-shell app -u " .. unt .. "-battery-notify.service -t "  .. svc .. " -- batterynotify")
 hyde.start.applet_network_manager("hyde-shell app -u " .. unt .. "-network-manager-applet.service -t "  .. svc .. " -- nm-applet --indicator")
 hyde.start.applet_removable_media("hyde-shell app -u " .. unt .. "-removable-media-applet.service -t "  .. svc .. " -- udiskie --no-automount --smart-tray")
 hyde.start.applet_bluetooth("hyde-shell app -u " .. unt .. "-bluetooth-applet.service -t "  .. svc .. " -- blueman-applet")
