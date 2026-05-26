@@ -1,7 +1,9 @@
+
 [hyprland]
 description = "hyprland with lua"
 conflicts = ["hyprland_legacy", "hyprland-legacy"]
 version = "0.55.0"
+post_command = "hyprctl reload"
 
 [[hyprland.dependency]]
 yay = ["hyprland"]

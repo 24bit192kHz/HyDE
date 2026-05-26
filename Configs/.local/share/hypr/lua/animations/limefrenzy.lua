@@ -1,7 +1,7 @@
 local animation = {
-    name = "LimeFrenzy",
+    name = "Lime Frenzy",
     icon = "",
-    description = "LimeFrenzy animation profile for Hyprland"
+    description = "Playful popin with slight overshoot by LimeFrenzy"
 }
 
 if not hl then

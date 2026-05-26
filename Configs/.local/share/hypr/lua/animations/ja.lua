@@ -1,7 +1,7 @@
 local animation = {
-    name = "Ja",
+    name = "Smooth In/Out",
     icon = "",
-    description = "Ja animation profile for Hyprland"
+    description = "Gentle in/out easing for calm motion by Ja."
 }
 
 if not hl then

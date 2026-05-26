@@ -1,7 +1,7 @@
 local animation = {
     name = "Fast",
     icon = "",
-    description = "Fast animation profile for Hyprland"
+    description = "Snappy, low-latency feel for quick transitions."
 }
 
 if not hl then

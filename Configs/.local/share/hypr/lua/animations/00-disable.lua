@@ -1,5 +1,5 @@
 local animation = {
-    name = "Disabled",
+    name = "Disabled (No Animations)",
     icon = "󰇄",
     description = "Disable all animations"
 }

@@ -8,22 +8,6 @@ if not hl then
     return animation
 end
 
-hl.animation({leaf = "fadeIn", enabled = true, speed = 1.8, bezier = "md3_decel"})
-hl.animation({leaf = "fadeOut", enabled = true, speed = 1.8, bezier = "md3_decel"})
-hl.animation({leaf = "fadeSwitch", enabled = true, speed = 1.8, bezier = "md3_decel"})
-hl.animation({leaf = "fadeShadow", enabled = true, speed = 1.8, bezier = "md3_decel"})
-hl.animation({leaf = "fadeDim", enabled = true, speed = 1.8, bezier = "md3_decel"})
-hl.animation({leaf = "fadeLayers", enabled = true, speed = 1.8, bezier = "md3_decel"})
-hl.animation({leaf = "fadePopups", enabled = true, speed = 1.8, bezier = "md3_decel"})
-hl.animation({leaf = "fadeDpms", enabled = true, speed = 1.8, bezier = "md3_decel"})
-hl.animation({leaf = "workspacesIn", enabled = true, speed = 4.0, bezier = "menu_decel", style = "slide"})
-hl.animation({leaf = "workspacesOut", enabled = true, speed = 4.0, bezier = "menu_decel", style = "slide"})
-hl.animation(
-    {leaf = "specialWorkspaceIn", enabled = true, speed = 2.3, bezier = "md3_decel", style = "slidefadevert 15%"}
-)
-hl.animation(
-    {leaf = "specialWorkspaceOut", enabled = true, speed = 2.3, bezier = "md3_decel", style = "slidefadevert 15%"}
-)
 hl.curve("wind", {type = "bezier", points = {{0.05, 0.85}, {0.03, 0.97}}})
 hl.curve("winIn", {type = "bezier", points = {{0.07, 0.88}, {0.04, 0.99}}})
 hl.curve("winOut", {type = "bezier", points = {{0.20, -0.15}, {0, 1}}})
@@ -42,6 +26,22 @@ hl.curve("easeOutExpo", {type = "bezier", points = {{0.10, 0.94}, {0.23, 0.98}}}
 hl.curve("softAcDecel", {type = "bezier", points = {{0.20, 0.20}, {0.15, 1}}})
 hl.curve("md2", {type = "bezier", points = {{0.30, 0}, {0.15, 1}}})
 hl.curve("OutBack", {type = "bezier", points = {{0.28, 1.40}, {0.58, 1}}})
+hl.animation({leaf = "fadeIn", enabled = true, speed = 1.8, bezier = "md3_decel"})
+hl.animation({leaf = "fadeOut", enabled = true, speed = 1.8, bezier = "md3_decel"})
+hl.animation({leaf = "fadeSwitch", enabled = true, speed = 1.8, bezier = "md3_decel"})
+hl.animation({leaf = "fadeShadow", enabled = true, speed = 1.8, bezier = "md3_decel"})
+hl.animation({leaf = "fadeDim", enabled = true, speed = 1.8, bezier = "md3_decel"})
+hl.animation({leaf = "fadeLayers", enabled = true, speed = 1.8, bezier = "md3_decel"})
+hl.animation({leaf = "fadePopups", enabled = true, speed = 1.8, bezier = "md3_decel"})
+hl.animation({leaf = "fadeDpms", enabled = true, speed = 1.8, bezier = "md3_decel"})
+hl.animation({leaf = "workspacesIn", enabled = true, speed = 4.0, bezier = "menu_decel", style = "slide"})
+hl.animation({leaf = "workspacesOut", enabled = true, speed = 4.0, bezier = "menu_decel", style = "slide"})
+hl.animation(
+    {leaf = "specialWorkspaceIn", enabled = true, speed = 2.3, bezier = "md3_decel", style = "slidefadevert 15%"}
+)
+hl.animation(
+    {leaf = "specialWorkspaceOut", enabled = true, speed = 2.3, bezier = "md3_decel", style = "slidefadevert 15%"}
+)
 hl.animation({leaf = "border", enabled = true, speed = 1.6, bezier = "liner"})
 hl.animation({leaf = "borderangle", enabled = true, speed = 82, bezier = "liner", style = "loop"})
 hl.animation({leaf = "windowsIn", enabled = true, speed = 3.2, bezier = "winIn", style = "slide"})

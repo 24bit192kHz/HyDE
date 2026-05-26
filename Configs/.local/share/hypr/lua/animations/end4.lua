@@ -1,7 +1,7 @@
 local animation = {
-    name = "End4",
+    name = "Popin Soft",
     icon = "",
-    description = "End4 animation profile for Hyprland"
+    description = "Soft popin with md3 easing by End4."
 }
 
 if not hl then

@@ -1,5 +1,5 @@
 local animation = {
-    name = "Me-2",
+    name = "Elastic Slide",
     icon = "",
     description = "Me-2 animation profile for Hyprland"
 }

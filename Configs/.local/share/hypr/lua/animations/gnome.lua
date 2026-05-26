@@ -1,7 +1,7 @@
 local animation = {
-    name = "GNOME",
+    name = "GNOME Spring",
     icon = "",
-    description = "GNOME-like window animation profile for Hyprland"
+    description = "Spring-based, GNOME-like popin and fade behavior."
 }
 
 if not hl then
