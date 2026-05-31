@@ -1,0 +1,88 @@
+[hyde]
+description = "Hyde core configuration"
+pre_command = "echo 'Pre commands '"
+post_command = "echo 'HyDE backed up!'"
+
+#? Core configuration
+[[hyde.files]]
+action = "preserve"
+source_root = "Configs/.config"
+target_root = "${XDG_CONFIG_HOME}"
+paths = ["hyde/wallbash"]
+
+[[hyde.files]]
+clean_target = true
+action = "sync"
+source_root = "Configs/.local/lib"
+target_root = "${HOME}/.local/lib"
+paths = "hyde"
+ignore_paths = [".*", "__pycache__"]
+
+# [[hyde.files]]
+# action = "sync"
+# source_root = "Configs/.local/share"
+# target_root = "${XDG_DATA_HOME}"
+# paths = ["icons/Wallbash-Icon", "themes/Wallbash-Gtk"]
+[[hyde.files]]
+clean_target = true
+action = "sync"
+source_root = "Configs/.local/share"
+target_root = "${XDG_DATA_HOME}"
+paths = "hyde"
+ignore_paths = [".*", "__pycache__", "schema"]
+
+[[hyde.files]]
+action = "sync"
+source_root = "Configs/.config"
+target_root = "${XDG_CONFIG_HOME}"
+paths = [
+    "gtk-3.0",
+    "Kvantum",
+    "nwg-look",
+    "qt5ct",
+    "qt6ct",
+    "xsettingsd",
+    "kdeglobals",
+]
+
+[[hyde.files]]
+action = "sync"
+source_root = "Configs/"
+target_root = "${HOME}"
+paths = ".gtkrc-2.0"
+
+# Converted from Scripts/restore_cfg.psv
+[[hyde.files]]
+action = "preserve"
+source_root = "Configs/.config/hyde"
+target_root = "${XDG_CONFIG_HOME}/hyde"
+paths = "config.toml"
+
+[[hyde.files]]
+action = "preserve"
+source_root = "Configs/.config/pypr"
+target_root = "${XDG_CONFIG_HOME}/pypr"
+paths = "config.toml"
+
+# [[hyde.files]]
+# action = "sync"
+# source_root = "Configs/.config/systemd"
+# target_root = "${XDG_CONFIG_HOME}/systemd"
+# paths = "user"
+[[hyde.files]]
+action = "sync"
+source_root = "Configs/.config/uwsm"
+target_root = "${XDG_CONFIG_HOME}/uwsm"
+paths = ["env", "env-hyprland", "env.d", "env-hyprland.d"]
+
+[[hyde.files]]
+action = "preserve"
+source_root = "Configs/.config"
+target_root = "${XDG_CONFIG_HOME}"
+paths = "xdg-terminals.list"
+
+[[hyde.files]]
+action = "sync"
+source_root = "Configs/.local/bin"
+target_root = "${HOME}/.local/bin"
+paths = ["hyde-shell", "hydectl"]

@@ -1,0 +1,9 @@
+
+[baloofilerc]
+pre_command = "echo 'Preserve baloo configuration'"
+
+[[baloofilerc.files]]
+action = "preserve"
+source_root = "Configs/.config"
+target_root = "${XDG_CONFIG_HOME}"
+paths = "baloofilerc"

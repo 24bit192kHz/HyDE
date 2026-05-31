@@ -32,68 +32,69 @@ hyde.env("XDG_DATA_HOME", os.getenv("XDG_DATA_HOME") or ((os.getenv("HOME") or "
 hyde.env("XDG_STATE_HOME", os.getenv("XDG_STATE_HOME") or ((os.getenv("HOME") or "") .. "/.local/state"))
 hyde.env("PATH", os.getenv("PATH") or "")
 
--- Startup commands
-hyde.start = hyde.start or {}
+local hc = hyde.config
 
-hyde.start.dbus_share_picker("dbus-update-activation-environment --systemd " .. systemd_env_str) -- for XDPH
-hyde.start.systemd_share_picker("systemctl --user import-environment " .. systemd_env_str) -- for XDPH ( redundant with the first one )
-hyde.start.xdg_portal_reset("hyde-shell resetxdgportal.lua") -- for XDPH
-hyde.start.auth_dialogue("hyde-shell app -t " .. svc .. " -- polkitkdeauth.sh")
-hyde.start.idle_daemon("hyde-shell app -u " .. unt .. "-idle.service -t "  .. svc .. " -- hypridle")
-hyde.start.blue_light_filter_daemon("hyde-shell app -u " .. unt .. "-blue-light-filter.service -t " .. svc .. " -- hyprsunset")
-hyde.start.text_clipboard("hyde-shell app -u " .. unt .. "-text-clipboard.service -t "  .. svc .. " wl-paste --type text --watch cliphist store")
-hyde.start.image_clipboard("hyde-shell app -u " .. unt .. "-image-clipboard.service -t "  .. svc .. " wl-paste --type image --watch cliphist store")
-hyde.start.clipboard_persist("hyde-shell app -u " .. unt .. "-clipboard-persist.service -t "  .. svc .. " wl-clip-persist --clipboard regular")
-hyde.start.wallpaper("hyde-shell app -u " .. unt .. "-wallpaper.service -t "  .. svc .. " -- wallpaper.sh --start --global")
-hyde.start.bar("hyde-shell app -u " .. unt .. "-bar.scope -t "  .. scp .. " -- waybar.py --watch") -- waybar.py injects it itself as -u $unt.service :- therefore we use scope here to avoid conflicts
-hyde.start.notifications("hyde-shell app -u " .. unt .. "-notifications.service -t "  .. svc .. " -- dunst")
-hyde.start.battery_notify("hyde-shell app -u " .. unt .. "-battery-notify.service -t "  .. svc .. " -- batterynotify.lua")
-hyde.start.applet_network_manager("hyde-shell app -u " .. unt .. "-network-manager-applet.service -t "  .. svc .. " -- nm-applet --indicator")
-hyde.start.applet_removable_media("hyde-shell app -u " .. unt .. "-removable-media-applet.service -t "  .. svc .. " -- udiskie --no-automount --smart-tray")
-hyde.start.applet_bluetooth("hyde-shell app -u " .. unt .. "-bluetooth-applet.service -t "  .. svc .. " -- blueman-applet")
-hyde.start.hyde_config("hyde-shell app -u " .. unt .. "-config-watcher.service -t "  .. svc .. " -- config.lua")
+-- Startup commands
+
+hc.start.dbus_share_picker = "dbus-update-activation-environment --systemd " .. systemd_env_str
+hc.start.systemd_share_picker = "systemctl --user import-environment " .. systemd_env_str
+hc.start.xdg_portal_reset = "hyde-shell resetxdgportal.lua"
+hc.start.auth_dialogue = "hyde-shell app -t " .. svc .. " -- polkitkdeauth.sh"
+hc.start.idle_daemon = "hyde-shell app -u " .. unt .. "-idle.service -t "  .. svc .. " -- hypridle"
+hc.start.blue_light_filter_daemon = "hyde-shell app -u " .. unt .. "-blue-light-filter.service -t " .. svc .. " -- hyprsunset"
+hc.start.text_clipboard = "hyde-shell app -u " .. unt .. "-text-clipboard.service -t "  .. svc .. " wl-paste --type text --watch cliphist store"
+hc.start.image_clipboard = "hyde-shell app -u " .. unt .. "-image-clipboard.service -t "  .. svc .. " wl-paste --type image --watch cliphist store"
+hc.start.clipboard_persist = "hyde-shell app -u " .. unt .. "-clipboard-persist.service -t "  .. svc .. " wl-clip-persist --clipboard regular"
+hc.start.wallpaper = "hyde-shell app -u " .. unt .. "-wallpaper.service -t "  .. svc .. " -- wallpaper.sh --start --global"
+hc.start.bar = "hyde-shell app -u " .. unt .. "-bar.scope -t "  .. scp .. " -- waybar.py --watch" -- waybar.py injects it itself as -u $unt.service :- therefore we use scope here to avoid conflicts
+hc.start.notifications = "hyde-shell app -u " .. unt .. "-notifications.service -t "  .. svc .. " -- dunst"
+hc.start.battery_notify = "hyde-shell app -u " .. unt .. "-battery-notify.service -t "  .. svc .. " -- batterynotify.lua"
+hc.start.applet_network_manager = "hyde-shell app -u " .. unt .. "-network-manager-applet.service -t "  .. svc .. " -- nm-applet --indicator"
+hc.start.applet_removable_media = "hyde-shell app -u " .. unt .. "-removable-media-applet.service -t "  .. svc .. " -- udiskie --no-automount --smart-tray"
+hc.start.applet_bluetooth = "hyde-shell app -u " .. unt .. "-bluetooth-applet.service -t "  .. svc .. " -- blueman-applet"
+hc.start.hyde_config = "hyde-shell app -u " .. unt .. "-config-watcher.service -t "  .. svc .. " -- config.lua"
 
 
 -- Themes (assign to hyde.config.ui)
-hyde.config.ui.hyde_theme = "HyDE"
-hyde.config.ui.gtk_theme = "Wallbash-Gtk"
-hyde.config.ui.icon_theme = "Tela-circle-dracula"
-hyde.config.ui.color_scheme = "prefer-dark"
-hyde.config.ui.button_layout = "" -- colon separated list of buttons
+hc.ui.hyde_theme = "HyDE"
+hc.ui.gtk_theme = "Wallbash-Gtk"
+hc.ui.icon_theme = "Tela-circle-dracula"
+hc.ui.color_scheme = "prefer-dark"
+hc.ui.button_layout = "" -- colon separated list of buttons
 
 -- Cursor
-hyde.config.ui.cursor_theme = "Bibata-Modern-Ice"
-hyde.config.ui.cursor_size = 24
+hc.ui.cursor_theme = "Bibata-Modern-Ice"
+hc.ui.cursor_size = 24
 
 -- Fonts
-hyde.config.ui.font = "Cantarell"
-hyde.config.ui.font_size = 10
-hyde.config.ui.document_font = "Cantarell"
-hyde.config.ui.document_font_size = 10
-hyde.config.ui.monospace_font = "CaskaydiaCove Nerd Font Mono"
-hyde.config.ui.monospace_font_size = 9
-hyde.config.ui.notification_font = "Mononoki Nerd Font Mono"
-hyde.config.ui.bar_font = "JetBrainsMono Nerd Font"
-hyde.config.ui.menu_font = "JetBrainsMono Nerd Font"
-hyde.config.ui.font_antialiasing = "rgba"
-hyde.config.ui.font_hinting = ""
+hc.ui.font = "Cantarell"
+hc.ui.font_size = 10
+hc.ui.document_font = "Cantarell"
+hc.ui.document_font_size = 10
+hc.ui.monospace_font = "CaskaydiaCove Nerd Font Mono"
+hc.ui.monospace_font_size = 9
+hc.ui.notification_font = "Mononoki Nerd Font Mono"
+hc.ui.bar_font = "JetBrainsMono Nerd Font"
+hc.ui.menu_font = "JetBrainsMono Nerd Font"
+hc.ui.font_antialiasing = "rgba"
+hc.ui.font_hinting = ""
 
 -- Extra Themes
-hyde.config.ui.code_theme = ""
-hyde.config.ui.sddm_theme = ""
+hc.ui.code_theme = ""
+hc.ui.sddm_theme = ""
 
 
 -- Apps and launchers
-hyde.config.app.quickapps = nil
-hyde.config.app.browser = "hyde-shell open --fall firefox web-browser"
-hyde.config.app.editor = "hyde-shell open --fall code-oss code-editor"
-hyde.config.app.explorer = "hyde-shell open --fall dolphin file-manager"
-hyde.config.app.terminal = "hyde-shell app -T"
-hyde.config.app.lockscreen = "hyde-shell lock-session"
+hc.app.quickapps = nil
+hc.app.browser = "hyde-shell open --fall firefox web-browser"
+hc.app.editor = "hyde-shell open --fall code-oss code-editor"
+hc.app.explorer = "hyde-shell open --fall dolphin file-manager"
+hc.app.terminal = "hyde-shell app -T"
+hc.app.lockscreen = "hyde-shell lock-session"
 
 
 -- Mod keys
-hyde.config.modifiers.main = "SUPER"
-hyde.config.modifiers.shift = "SHIFT"
-hyde.config.modifiers.alt = "ALT"
-hyde.config.modifiers.ctrl = "CTRL"
+hc.modifiers.main = "SUPER"
+hc.modifiers.shift = "SHIFT"
+hc.modifiers.alt = "ALT"
+hc.modifiers.ctrl = "CTRL"

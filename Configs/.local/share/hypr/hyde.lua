@@ -33,7 +33,6 @@ package.cpath = package.cpath .. ";" .. hyde.path.state .. "/hyde/lua_env/lib/lu
 require("hyde.utils")
 require("hyde.env")
 require("hyde.config")
-require("hyde.start")
 require("hyde.binds")
 require("hyde.dispatcher")
 require("hyde.handlers")

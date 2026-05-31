@@ -49,6 +49,15 @@ hyde.get_logical_monitor = function()
     }
 end
 
+local function in_table(list, title)
+    for _, v in ipairs(list) do
+        if v == title then
+            return true
+        end
+    end
+    return false
+end
+
 --- Sets the maximum boundary for floating windows based on the usable monitor area.
 -- @param win table: The window object provided by the Hyprland event.
 hyde.handle.float_size_bounds = function(win)
@@ -58,6 +67,12 @@ hyde.handle.float_size_bounds = function(win)
     local cfg = hyde.config.window and hyde.config.window.float_size_bounds
     if not cfg or not cfg.enabled then
         return
+    end
+    local no_bounds = hyde.config.window.float.no_bounds or {}
+    for _, field in ipairs({"initial_title", "title", "class", "initial_class"}) do
+        if in_table(no_bounds[field] or {}, win[field]) then
+            return
+        end
     end
 
     local l_mon = hyde.get_logical_monitor()

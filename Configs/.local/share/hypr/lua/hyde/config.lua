@@ -102,12 +102,20 @@ function hyde.config.load_toml(filename)
 		return hyde.config
 	end
 
-	local hyprland = data.hyprland
-	if type(hyprland) ~= "table" then
-		return hyde.config
+	local desktop = data.desktop
+	if type(desktop) == "table" then
+		if type(desktop.apps) == "table" and desktop.app == nil then
+			desktop.app = desktop.apps
+		end
+		hyde.config.apply(desktop)
 	end
 
-	return hyde.config.apply(hyprland)
+	local hyprland = data.hyprland
+	if type(hyprland) == "table" then
+		hyde.config.apply(hyprland)
+	end
+
+	return hyde.config
 end
 
 local default_config = {
@@ -163,10 +171,13 @@ hyde.config(default_config)
 hyde.config.ui = hyde.config.ui or {}
 hyde.config.wallbash = hyde.config.wallbash or {}
 hyde.config.window = hyde.config.window or {}
+hyde.config.window.float = hyde.config.window.float or {}
 hyde.config.monitor = hyde.config.monitor or {}
 hyde.config.anim = hyde.config.anim or {}
 hyde.config.app = hyde.config.app or {}
 hyde.config.modifiers = hyde.config.modifiers or {}
+hyde.config.start = hyde.config.start or {}
+
 -- Example usage:
 --
 -- Direct table assignment:

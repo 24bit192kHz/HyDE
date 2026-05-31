@@ -443,7 +443,6 @@ dependencies = [
     { name = "hererocks" },
     { name = "inotify-simple" },
     { name = "loguru" },
-    { name = "prek" },
     { name = "pulsectl" },
     { name = "pygobject" },
     { name = "pyprland" },
@@ -458,13 +457,16 @@ dependencies = [
 amd = [
     { name = "pyamdgpuinfo" },
 ]
+dev = [
+    { name = "prek" },
+]
 
 [package.metadata]
 requires-dist = [
     { name = "hererocks", specifier = ">=0.25.1" },
     { name = "inotify-simple" },
     { name = "loguru", specifier = "==0.7.3" },
-    { name = "prek", specifier = ">=0.4.1" },
+    { name = "prek", marker = "extra == 'dev'", specifier = ">=0.4.1" },
     { name = "pulsectl", specifier = "==24.12.0" },
     { name = "pyamdgpuinfo", marker = "extra == 'amd'" },
     { name = "pygobject" },
@@ -475,7 +477,7 @@ requires-dist = [
     { name = "websockets", specifier = ">=16.0" },
     { name = "xdg-prefs", git = "https://github.com/rchaput/xdg-prefs" },
 ]
-provides-extras = ["amd"]
+provides-extras = ["amd", "dev"]
 
 [[package]]
 name = "idna"
