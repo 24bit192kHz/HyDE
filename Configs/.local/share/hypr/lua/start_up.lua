@@ -12,7 +12,6 @@ hl.on(
 		hl.exec_cmd(hs.notifications)
 		hl.exec_cmd(hs.auth_dialogue)
 
-		hl.exec_cmd(hs.xdg_portal_reset)
 		hl.exec_cmd(hs.text_clipboard)
 		hl.exec_cmd(hs.image_clipboard)
 		hl.exec_cmd(hs.clipboard_persist)

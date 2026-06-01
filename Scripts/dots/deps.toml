@@ -1,4 +1,3 @@
-
 [[global.dependency]]
 # Core pacman dependencies imported from Scripts/pkg_core.lst
 pacman = [
@@ -21,15 +20,11 @@ pacman = [
   "brightnessctl", # screen brightness control
   "playerctl", # media controls
   "udiskie", # manage removable media
-
   # Display Manager
   "sddm", # display manager for KDE plasma
   "qt5-quickcontrols", # for sddm theme ui elements
   "qt5-quickcontrols2", # for sddm theme ui elements
   "qt5-graphicaleffects", # for sddm theme effects
-
-
-
   # Window Manager
   "awww", # wallpaper
   "wlogout", # logout menu
@@ -39,7 +34,6 @@ pacman = [
   "satty", # Modern Screenshot Annotation
   "cliphist", # clipboard manager
   "wl-clip-persist", # Keep Wayland clipboard even after programs close (avoids crashes)
-
   # Dependencies
   "hyprpolkitagent", # authentication agent
   "xdg-desktop-portal-hyprland", # xdg desktop portal for hyprland
@@ -54,7 +48,6 @@ pacman = [
   "kde-cli-tools", # for dolphin file type defaults
   "libnotify", # for notifications
   "noto-fonts-emoji", # emoji font
-
   # Theming
   "nwg-look", # gtk configuration tool
   "qt5ct", # qt5 configuration tool
@@ -63,7 +56,6 @@ pacman = [
   "kvantum-qt5", # svg based qt5 theme engine
   "qt5-wayland", # wayland support in qt5
   "qt6-wayland", # wayland support in qt6
-
   # Applications
   "firefox", # browser
   "ark", # kde file archiver
@@ -73,6 +65,7 @@ pacman = [
   "nwg-displays", # monitor management utility
   "fzf", # Command-line fuzzy finder
   # HyDE
+
 ]
 yay = [
   "hyprquery", # A CLI utility for querying configuration values from hypr-related configuration. Using native hyprlang lib.

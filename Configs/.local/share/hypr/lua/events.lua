@@ -18,6 +18,7 @@ local floating_window_follow_cursor = function(win)
 end
 
 local exit_handler = function()
+	hl.dispatch(hl.dsp.exec_cmd("uwsm stop"))
 	hl.dispatch(hl.dsp.exec_cmd("hyprshutdown"))
 end
 

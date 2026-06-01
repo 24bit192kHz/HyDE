@@ -31,13 +31,17 @@ function util.check_require(module_name)
   end
 
   local filename = package.searchpath(module_name, package.path)
-  if filename then
-    return require(module_name)
+  if not filename then
+    return nil
   end
 
-  return nil
-end
+  local ok, result = pcall(require, module_name)
+  if not ok then
+    return nil
+  end
 
+  return result
+end
 -- Returns true when the value is a non-empty list-like table.
 --
 -- Parameters:
