@@ -107,3 +107,4 @@ source = "blob+https://raw.githubusercontent.com/Vladimir-csp/app2unit/refs/head
 action = "sync"
 target_root = "${HOME}/.local/lib/hyde/"
 paths = "app2unit"
+post_command = "chmod +x ${HOME}/.local/lib/hyde/app2unit"

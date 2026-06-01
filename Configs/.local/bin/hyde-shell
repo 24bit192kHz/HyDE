@@ -554,7 +554,7 @@ run_pypr() {
 			pgrep -u "$USER" pypr >/dev/null && print_log -y "Killing existing pypr process"
 			rm -f "$socket_path"
 
-			exec app2unit.sh -t service pypr
+			exec app.sh -t service pypr
 		fi
 
 	else
@@ -696,7 +696,7 @@ app)
 	export PATH="${HYDE_SCRIPTS_PATH}:${PATH}"
 	[[ "${HYDEPY}" -eq 1 ]] && python_activate
 	shift
-	exec app2unit.sh "$@"
+	exec app.sh "$@"
 	;;
 init | --init)
 	initialized
