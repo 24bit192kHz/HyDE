@@ -1,10 +1,10 @@
 {
   "custom/updates": {
-    "exec": "hyde-shell system.update",
+    "exec": "hyde-shell system.update.py",
     "return-type": "json",
     "format": "{0}",
     "rotate": 0,
-    "on-click": "hyde-shell app system.update.sh up", 
+    "on-click": "hyde-shell system.update.py up",
     "interval": 86400,
     "tooltip": true,
     "signal": 20

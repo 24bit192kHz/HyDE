@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import os
+from contextlib import contextmanager
 from pathlib import Path
-from tempfile import TemporaryDirectory
-from typing import Sequence
+from tempfile import TemporaryDirectory, mktemp
+from typing import Iterator, Sequence
 
 AUR_HELPERS = ("paru", "paru-bin", "yay", "yay-bin")
 PackageEntry = tuple[str, str | None, str | None, str | None]
@@ -88,12 +90,31 @@ def file_query(ctx, target: str) -> None:
 
 
 def count_updates(ctx) -> int:
-    output = ctx.capture(["pacman", "-Qu"], check=False)
-    return sum(1 for line in output.splitlines() if line.strip())
+    with _checkupdates_env() as env:
+        output = ctx.capture(["checkupdates"], check=False, env=env)
+        return sum(1 for line in output.splitlines() if line.strip())
 
 
 def list_updates(ctx) -> None:
-    ctx.run(["pacman", "-Qu"], check=False)
+    with _checkupdates_env() as env:
+        ctx.run(["checkupdates"], check=False, env=env)
+
+
+@contextmanager
+def _checkupdates_env() -> Iterator[dict[str, str]]:
+    temp_db = mktemp(
+        dir=os.environ.get("XDG_RUNTIME_DIR", "/tmp"),
+        prefix="checkupdates_db_",
+    )
+    env = os.environ.copy()
+    env["CHECKUPDATES_DB"] = temp_db
+    try:
+        yield env
+    finally:
+        try:
+            os.remove(temp_db)
+        except FileNotFoundError:
+            pass
 
 
 def _install_aur_helper(ctx, helper: str, no_confirm: bool = False) -> None:
