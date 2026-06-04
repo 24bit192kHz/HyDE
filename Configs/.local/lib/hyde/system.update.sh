@@ -14,11 +14,11 @@ if [ "$1" == "up" ]; then
         trap 'pkill -RTMIN+20 waybar' EXIT
         while IFS="=" read -r key value; do
             case "$key" in
-                OFFICIAL_UPDATES) official=$value ;;
-                AUR_UPDATES) aur=$value ;;
-                FLATPAK_UPDATES) flatpak=$value ;;
+            OFFICIAL_UPDATES) official=$value ;;
+            AUR_UPDATES) aur=$value ;;
+            FLATPAK_UPDATES) flatpak=$value ;;
             esac
-        done < "$temp_file"
+        done <"$temp_file"
         command="
         hyde-shell fastfetch
         printf '[Official] %-10s\n[AUR]      %-10s\n[Flatpak]  %-10s\n' '$official' '$aur' '$flatpak'
@@ -26,7 +26,7 @@ if [ "$1" == "up" ]; then
         $fpk_exup
         read -n 1 -p 'Press any key to continue...'
         "
-        kitty --title systemupdate sh -c "$command"
+        xdg-terminal-exec --title=systemupdate -- sh -c "$command"
     else
         echo "No upgrade info found. Please run the script without parameters first."
     fi
@@ -36,7 +36,7 @@ aur=$($aurhlpr -Qua | wc -l)
 ofc=$(
     temp_db=$(mktemp -u "${XDG_RUNTIME_DIR:-"/tmp"}/checkupdates_db_XXXXXX")
     trap '[ -f "$temp_db" ] && rm "$temp_db" 2>/dev/null' EXIT INT TERM
-    CHECKUPDATES_DB="$temp_db" checkupdates 2> /dev/null | wc -l
+    CHECKUPDATES_DB="$temp_db" checkupdates 2>/dev/null | wc -l
 )
 if pkg_installed flatpak; then
     fpk=$(flatpak remote-ls --updates | wc -l)
@@ -47,13 +47,13 @@ else
 fi
 upd=$((ofc + aur + fpk))
 upgrade_info=$(
-    cat << EOF
+    cat <<EOF
 OFFICIAL_UPDATES=$ofc
 AUR_UPDATES=$aur
 FLATPAK_UPDATES=$fpk
 EOF
 )
-echo "$upgrade_info" > "$temp_file"
+echo "$upgrade_info" >"$temp_file"
 if [ $upd -eq 0 ]; then
     upd=""
     echo "{\"text\":\"$upd\", \"tooltip\":\" Packages are up to date\"}"

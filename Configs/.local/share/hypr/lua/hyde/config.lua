@@ -78,48 +78,6 @@ setmetatable(
 	}
 )
 
---  * Get config from active hyde theme
--- TODO: Unused
-function hyde.config.load_theme()
-	local state = require("luautils.global.state")
-	local xdg = require("luautils.xdg")
-	local theme_parser = require("luautils.theme.parser")
-
-	local hyde_theme = state.staterc_get("HYDE_THEME")
-	if not hyde_theme or hyde_theme == "" then
-		return hyde.config
-	end
-
-	local theme_file = xdg.config .. "/hyde/themes/" .. hyde_theme .. "/hypr.theme"
-
-	local keys = {
-		GTK_THEME = "gtk_theme",
-		COLOR_SCHEME = "color_scheme",
-		ICON_THEME = "icon_theme",
-		CURSOR_THEME = "cursor_theme",
-		CURSOR_SIZE = "cursor_size",
-		FONT = "font",
-		FONT_SIZE = "font_size",
-		DOCUMENT_FONT = "document_font",
-		DOCUMENT_FONT_SIZE = "document_font_size",
-		MONOSPACE_FONT = "monospace_font",
-		MONOSPACE_FONT_SIZE = "monospace_font_size",
-		CODE_THEME = "code_theme"
-	}
-
-	local cfg = {ui = {}}
-
-	for hyvar, field in pairs(keys) do
-		local value = theme_parser.get(hyvar, theme_file)
-		if value and value ~= "" then
-			cfg.ui[field] = value
-		end
-	end
-
-	hyde.config.apply(cfg, {skip_empty = true})
-	return hyde.config
-end
-
 -- * config.toml
 local ok, toml = pcall(check_require, "toml")
 if not ok then

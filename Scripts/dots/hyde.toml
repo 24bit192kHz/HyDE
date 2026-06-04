@@ -86,11 +86,14 @@ source_root = "Configs/.local/bin"
 target_root = "${HOME}/.local/bin"
 paths = ["hyde-shell", "hydectl"]
 
-[[hyde.files]]
-source = "blob+https://raw.githubusercontent.com/hyprwm/contrib/refs/heads/main/grimblast/grimblast"
+[grimblast]
+# source = "blob+https://raw.githubusercontent.com/hyprwm/contrib/refs/heads/main/grimblast/grimblast"
+source = "blob+https://raw.githubusercontent.com/zspher/contrib/refs/heads/feature-grimblast-toplevel-handle/grimblast/grimblast"
 action = "sync"
 target_root = "${HOME}/.local/lib/hyde/screenshot"
 paths = "grimblast"
+owner = "hyprwm-contrib"
+post_command = "chmod +x ${HOME}/.local/lib/hyde/screenshot/grimblast"
 
 [xdg-terminal-exec]
 version = "0.14.0"

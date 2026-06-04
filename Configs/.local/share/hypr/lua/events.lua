@@ -23,5 +23,5 @@ local exit_handler = function()
 end
 
 hl.on("window.open", floating_window_boundary)
-hl.on("window.update_rules", floating_window_boundary)
+-- hl.on("window.update_rules", floating_window_boundary)
 hl.on("hyprland.shutdown", exit_handler)

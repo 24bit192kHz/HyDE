@@ -66,7 +66,6 @@ hl.bind(MOD .. " + G", hl.dsp.group.toggle(), _F)
 _F = {description = "[Window Management] set a window’s pseudotiling state"}
 hl.bind("ALT + P", hl.dsp.window.pseudo(), _F)
 
-
 -- bindd = $mainMod, G, $d toggle group,exec, hydectl tabs
 _F = {description = "[Window Management] cycle fullscreen"}
 hl.bind(MOD .. " + F11", cycle_fullscreen, _F)
@@ -184,13 +183,13 @@ hl.bind(MOD .. " + SHIFT + slash", hl.dsp.exec_cmd(hyde.sh.menu.search()), _F)
 -- # binddel = , F12, $d increase volume , exec, hyde-shell volumecontrol.sh -o i # increase volume
 
 _F = {description = "[Hardware Controls|Audio] un/mmute output", locked = true}
-hl.bind("XF86AudioMute", hl.dsp.exec_cmd(hyde.sh.volumecontrol("-o m")), _F)
+hl.bind("XF86AudioMute", hl.dsp.exec_cmd(hyde.sh.volumecontrol("-o", "m")), _F)
 _F = {description = "[Hardware Controls|Audio] un/mute microphone", locked = true}
-hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd(hyde.sh.volumecontrol("-i m")), _F)
+hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd(hyde.sh.volumecontrol("-i", "m")), _F)
 _F = {description = "[Hardware Controls|Audio] decrease volume", locked = true, repeating = true}
-hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd(hyde.sh.volumecontrol("-o d")), _F)
+hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd(hyde.sh.volumecontrol("-o", "d")), _F)
 _F = {description = "[Hardware Controls|Audio] increase volume", locked = true, repeating = true}
-hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd(hyde.sh.volumecontrol("-o i")), _F)
+hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd(hyde.sh.volumecontrol("-o", "i")), _F)
 
 _F = {description = "[Hardware Controls|Media] play media", locked = true}
 hl.bind("XF86AudioPlay", hl.dsp.exec_cmd("playerctl play-pause"), _F)
@@ -271,11 +270,7 @@ end
 
 for i = 1, 10 do
     local key = (i == 10) and 90 or kp[i]
-    hl.bind(
-        MOD .. "+code:" .. key,
-        hl.dsp.focus({workspace = tostring(i + 10)}),
-        {description = "WS " .. (i + 10)}
-    )
+    hl.bind(MOD .. "+code:" .. key, hl.dsp.focus({workspace = tostring(i + 10)}), {description = "WS " .. (i + 10)})
 end
 
 _F = {description = "[Workspaces|Navigation|Relative workspace] change active workspace forwards"}
