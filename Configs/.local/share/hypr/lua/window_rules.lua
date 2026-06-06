@@ -9,75 +9,78 @@
 local util = _G.hyde.utils
 
 local floating =
-  util.regex_compile({
-  class = {
-    "hyprland-share-picker",
-    "blueman-manager",
-    "pavucontrol-qt",
-    "com\\.gabm\\.satty",
-    "vlc",
-    "kvantummanager",
-    "qt6ct",
-    "qt[56]ct",
-    "nwg-(look|displays)",
-    "org\\.kde\\.ark",
-    "org\\.pulseaudio\\.pavucontrol",
-    "nm-(applet|connection-editor)",
-    "hyprpolkitagent",
-    "console-dropdown",
-    "org\\.kde\\.dolphin",
-    ".*dialog.*",
-    "[Xx]dg-desktop-portal-gtk",
-    "org\\.freedesktop\\.impl\\.portal\\.desktop\\.(hyprland|gtk)"
-  },
-  title = {
-    "Progress Dialog — Dolphin",
-    "Copying — Dolphin",
-    "Choose Files",
-    "Save As",
-    "Confirm to replace files",
-    "File Operation Progress",
-    "Open",
-    "Authentication Required",
-    "Add Folder to Workspace",
-    "File Upload.*",
-    "Choose wallpaper.*",
-    "Library.*",
-    ".*dialog.*",
-    "Open File",
-    "Volume Control",
-    "Save As.*"
+  util.regex_compile(
+  {
+    class = {
+      "hyprland-share-picker",
+      "blueman-manager",
+      "pavucontrol-qt",
+      "com\\.gabm\\.satty",
+      "vlc",
+      "kvantummanager",
+      "qt6ct",
+      "qt[56]ct",
+      "nwg-(look|displays)",
+      "org\\.kde\\.ark",
+      "org\\.pulseaudio\\.pavucontrol",
+      "nm-(applet|connection-editor)",
+      "hyprpolkitagent",
+      "console-dropdown",
+      "org\\.kde\\.dolphin",
+      ".*dialog.*",
+      "[Xx]dg-desktop-portal-gtk",
+      "org\\.freedesktop\\.impl\\.portal\\.desktop\\.(hyprland|gtk)"
+    },
+    title = {
+      "Progress Dialog — Dolphin",
+      "Copying — Dolphin",
+      "Choose Files",
+      "Save As",
+      "Confirm to replace files",
+      "File Operation Progress",
+      "Open",
+      "Authentication Required",
+      "Add Folder to Workspace",
+      "File Upload.*",
+      "Choose wallpaper.*",
+      "Library.*",
+      ".*dialog.*",
+      "Open File",
+      "Volume Control",
+      "Save As.*"
+    }
   }
-}
 )
 
 local pinned =
-  util.regex_compile({
-  title = {
-    "[Pp]icture[-\\s]?[Ii]n[-\\s]?[Pp]icture(.*)"
-  }
-},
+  util.regex_compile(
+  {
+    title = {
+      "[Pp]icture[-\\s]?[Ii]n[-\\s]?[Pp]icture(.*)"
+    }
+  },
   true
 )
 
 local modals =
-  util.regex_compile({
-  class = {
-    "pinentry-.*"
-  },
-  title = {
-    "Choose Files",
-    "Open File",
-    "Save As.*",
-    "File Operation Progress",
-    "Authentication Required",
-    "File Upload.*"
-  },
-  initial_title = {
-    "Open File",
-    "Save As.*"
+  util.regex_compile(
+  {
+    class = {
+      "pinentry-.*"
+    },
+    title = {
+      "Choose Files",
+      "Open File",
+      "Save As.*",
+      "File Operation Progress",
+      "Authentication Required",
+      "File Upload.*"
+    },
+    initial_title = {
+      "Open File",
+      "Save As.*"
+    }
   }
-}
 )
 
 -- Consolidated floating rules (includes dialogs, portal dialogs, popups, dolphin dialogs)
@@ -138,16 +141,18 @@ hl.window_rule(
 
 hl.window_rule(
   {
-      name = "xwayland_video_bridge_fixes",
-        match = {
-            class = "xwaylandvideobridge"
-        },
-        no_initial_focus = true,
-        no_focus = true,
-        no_anim = true,
-        no_blur = true,
-        max_size = {1, 1},
-        opacity = 0.0,
-        float = true,
-    }
+    name = "xwayland_video_bridge_fixes",
+    match = {
+      class = "xwaylandvideobridge"
+    },
+    no_initial_focus = true,
+    no_focus = true,
+    no_anim = true,
+    no_blur = true,
+    no_follow_mouse = true,
+    max_size = {1, 1},
+    opacity = 0.0,
+    float = true,
+    workspace = "special:xwayland_video_bridge silent"
+  }
 )

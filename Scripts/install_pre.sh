@@ -12,9 +12,11 @@ if ! source "${scrDir}/global_fn.sh"; then
 fi
 
 flg_DryRun=${flg_DryRun:-0}
+flg_Grub=${flg_Grub:-1}
+flg_Nvidia=${flg_Nvidia:-1}
 
 # grub
-if pkg_installed grub && [ -f /boot/grub/grub.cfg ]; then
+if [ "${flg_Grub}" -eq 1 ] && pkg_installed grub && [ -f /boot/grub/grub.cfg ]; then
     print_log -sec "bootloader" -b "detected :: " "grub..."
 
     if [ ! -f /etc/default/grub.hyde.bkp ] && [ ! -f /boot/grub/grub.hyde.bkp ]; then

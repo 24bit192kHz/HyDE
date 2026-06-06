@@ -50,7 +50,9 @@ hl.bind("ALT + U", hl.dsp.layout("promote"), _F)
 _F = {description = "[Scrolling] fit active window"}
 hl.bind("ALT + F", hl.dsp.layout("fit active"), _F)
 _F = {description = "[Scrolling] fit visible windows"}
-hl.bind("ALT + SHIFT + F", hl.dsp.layout("fit visible"), _F)
+hl.bind("ALT + CTRL + F", hl.dsp.layout("fit visible"), _F)
+_F = {description = "[Scrolling] fit all windows"}
+hl.bind("ALT + SHIFT + F", hl.dsp.layout("fit all"), _F)
 _F = {description = "[Scrolling] toggle scroll inhibition"}
 hl.bind("ALT + Z", hl.dsp.layout("inhibit_scroll"), _F)
 _F = {description = "[Scrolling] expel window to dedicated column"}
