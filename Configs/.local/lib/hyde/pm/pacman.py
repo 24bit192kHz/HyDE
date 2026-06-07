@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import shutil
 from contextlib import contextmanager
 from pathlib import Path
 from tempfile import TemporaryDirectory, mktemp
@@ -111,10 +112,21 @@ def _checkupdates_env() -> Iterator[dict[str, str]]:
     try:
         yield env
     finally:
-        try:
-            os.remove(temp_db)
-        except FileNotFoundError:
-            pass
+        _cleanup_checkupdates_db(temp_db)
+
+
+def _cleanup_checkupdates_db(path: str) -> None:
+    try:
+        p = Path(path)
+    except (TypeError, ValueError):
+        return
+    try:
+        if p.is_dir() and not p.is_symlink():
+            shutil.rmtree(p)
+        elif p.exists() or p.is_symlink():
+            p.unlink()
+    except FileNotFoundError:
+        pass
 
 
 def _install_aur_helper(ctx, helper: str, no_confirm: bool = False) -> None:
@@ -124,7 +136,7 @@ def _install_aur_helper(ctx, helper: str, no_confirm: bool = False) -> None:
         repo_path = Path(tmp) / helper
         ctx.run(["git", "clone", f"https://aur.archlinux.org/{helper}.git", str(repo_path)])
         mk_args = ["makepkg", "-si"]
-        if no_confirm or getattr(ctx, 'no_confirm', False):
+        if no_confirm or getattr(ctx, "no_confirm", False):
             mk_args.append("--noconfirm")
         ctx.run(mk_args, cwd=repo_path)
 
