@@ -15,7 +15,7 @@ action = "sync"
 source_root = "Configs/.local/lib"
 target_root = "${HOME}/.local/lib"
 paths = "hyde"
-ignore_paths = [".*", "__pycache__"]
+ignored_paths = [".*", "__pycache__"]
 
 # [[hyde.files]]
 # action = "sync"
@@ -28,20 +28,19 @@ action = "sync"
 source_root = "Configs/.local/share"
 target_root = "${XDG_DATA_HOME}"
 paths = ["hyde", "xdg-desktop-portal/hyprland-portals.conf"]
-ignore_paths = [".*", "__pycache__", "schema"]
+ignored_paths = [".*", "__pycache__", "schema"]
 
 [[hyde.files]]
 action = "sync"
 source_root = "Configs/.config"
 target_root = "${XDG_CONFIG_HOME}"
-paths = [
-    "gtk-3.0",
-    "Kvantum",
-    "nwg-look",
-    "qt5ct",
-    "qt6ct",
-    "xsettingsd",
-    "kdeglobals",
+paths = ["gtk-3.0", "Kvantum", "nwg-look", "qt5ct", "qt6ct", "xsettingsd"]
+ignored_paths = [
+    "qt5ct/qt5ct.conf",
+    "qt6ct/qt6ct.conf",
+    "qt5ct/colors/wallbash.conf",
+    "qt6ct/colors/wallbash.conf",
+    "gtk-3.0/settings.ini"
 ]
 
 [[hyde.files]]
@@ -78,7 +77,15 @@ paths = ["env", "env-hyprland", "env.d", "env-hyprland.d"]
 action = "preserve"
 source_root = "Configs/.config"
 target_root = "${XDG_CONFIG_HOME}"
-paths = "xdg-terminals.list"
+paths = [
+    "xdg-terminals.list",
+    "kdeglobals",
+    "qt5ct/qt5ct.conf",
+    "qt6ct/qt6ct.conf",
+    "qt5ct/colors/wallbash.conf",
+    "qt6ct/colors/wallbash.conf",
+    "gtk-3.0/settings.ini",
+]
 
 [[hyde.files]]
 action = "sync"
@@ -103,7 +110,6 @@ action = "sync"
 target_root = "${HOME}/.local/bin"
 paths = "xdg-terminal-exec"
 post_command = "chmod +x ${HOME}/.local/bin/xdg-terminal-exec"
-
 
 [app2unit]
 source = "blob+https://raw.githubusercontent.com/Vladimir-csp/app2unit/refs/heads/master/app2unit"

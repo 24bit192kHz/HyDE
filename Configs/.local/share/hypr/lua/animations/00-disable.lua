@@ -7,3 +7,5 @@ local animation = {
 if not hl then
     return animation
 end
+
+hl.animation({leaf = "global", enabled = false})
