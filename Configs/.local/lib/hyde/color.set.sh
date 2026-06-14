@@ -29,8 +29,8 @@ rgba_to_rgb() {
 }
 
 load_dconf_kdeglobals() {
+    source "$SHARE_DIR/hyde/env-theme"
     source "$LIB_DIR/hyde/color/hypr.sh"
-    source "$LIB_DIR/hyde/color/dconf.sh"
 
     #? Do not change when users has active plasma session installed
     #? This fixes kde connect and similar app color issues
@@ -52,7 +52,8 @@ load_dconf_kdeglobals() {
 
         toml_write "$XDG_CONFIG_HOME/Kvantum/wallbash/wallbash.kvconfig" '%General' 'reduce_menu_opacity' 0
     fi
-    [[ -n $HYPRLAND_INSTANCE_SIGNATURE ]] && shaders.sh reload
+    lua "$LIB_DIR/hyde/color/dconf.lua"
+    [[ -n $HYPRLAND_INSTANCE_SIGNATURE ]] && lua "$LIB_DIR/hyde/shaders.lua" --reload
 }
 create_wallbash_substitutions() {
     local use_inverted=$1
