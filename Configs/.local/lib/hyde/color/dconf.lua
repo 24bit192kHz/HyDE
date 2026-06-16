@@ -41,7 +41,7 @@ local DOC_FONT_NAME     = _f(_r("document_font"), _r("document_font_size"))
 local MONO_FONT_NAME    = _f(_r("monospace_font"), _r("monospace_font_size"))
 local FONT_ANTIALIASING = _r("font_antialiasing")  or "rgba"
 local FONT_HINTING      = _r("font_hinting")       or "slight"
-local BUTTON_LAYOUT     = _r("button_layout")      or "appmenu:close"
+local BUTTON_LAYOUT     = _r("button_layout")      or ""
 local TERMINAL          = _r("terminal")            or "kitty"
 
 local iface = Gio.Settings.new("org.gnome.desktop.interface")
