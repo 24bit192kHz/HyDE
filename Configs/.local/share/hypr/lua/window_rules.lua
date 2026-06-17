@@ -12,6 +12,8 @@ local floating =
   util.regex_compile(
   {
     class = {
+      "Bitwarden",
+      "org.keepassxc.KeePassXC",
       "hyprland-share-picker",
       "blueman-manager",
       "pavucontrol-qt",
