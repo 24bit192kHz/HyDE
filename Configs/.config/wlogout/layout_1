@@ -21,7 +21,7 @@
 
 {
     "label": "shutdown",
-    "action": "systemctl poweroff",
+    "action": "pkill -TERM librewolf 2>/dev/null; sleep 2; systemctl poweroff",
     "text": "Shutdown",
     "keybind": "s"
 }
@@ -35,7 +35,7 @@
 
 {
     "label": "reboot",
-    "action": "systemctl reboot",
+    "action": "pkill -TERM librewolf 2>/dev/null; sleep 2; systemctl reboot",
     "text": "Reboot",
     "keybind": "r"
 }

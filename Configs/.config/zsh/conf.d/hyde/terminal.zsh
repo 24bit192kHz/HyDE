@@ -237,7 +237,7 @@ alias c='clear' \
     pl='__package_manager search installed' \
     pa='__package_manager search all' \
     vc='code' \
-    fastfetch='fastfetch --logo-type kitty' \
+    fastfetch='fastfetch' \
     ..='cd ..' \
     ...='cd ../..' \
     .3='cd ../../..' \
@@ -246,3 +246,4 @@ alias c='clear' \
     mkdir='mkdir -p'
 
 
+alias c='clear && printf "\e[3J"'
