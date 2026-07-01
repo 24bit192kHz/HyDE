@@ -57,9 +57,14 @@ wlStyle="$(envsubst < "$wlTmplt")"
 
 # Save keyboard layout and force US so keybinds work regardless of current layout
 kb_layout_restore=$(hyprctl getoption input:kb_layout | awk 'NR==1{print $2}')
+# Save which layout variant was active (0=first, 1=second, etc.)
+kb_variant=$(hyprctl -j devices | jq -r '[.keyboards[] | select(.name | test("keyboard$"))][0].active_keymap' | grep -c "Arabic" 2>/dev/null || echo 0)
 hyprctl keyword input:kb_layout us >/dev/null
 
 wlogout -b "$wlColms" -c 0 -r 0 -m 0 --layout "$wLayout" --css <(echo "$wlStyle") --protocol layer-shell
 
 # Restore keyboard layout after wlogout exits
 hyprctl keyword input:kb_layout "$kb_layout_restore" >/dev/null
+# Switch back to the variant the user was on (0=US, 1=Arabic)
+kb_dev=$(hyprctl -j devices | jq -r '[.keyboards[] | select(.name | test("keyboard$"))][0].name')
+[ "$kb_variant" -gt 0 ] 2>/dev/null && hyprctl switchxkblayout "$kb_dev" "$kb_variant" >/dev/null 2>&1
