@@ -54,4 +54,12 @@ hypr_border="${hypr_border:-10}"
 export active_rad=$((hypr_border * 5))
 export button_rad=$((hypr_border * 8))
 wlStyle="$(envsubst < "$wlTmplt")"
+
+# Save keyboard layout and force US so keybinds work regardless of current layout
+kb_layout_restore=$(hyprctl getoption input:kb_layout | awk 'NR==1{print $2}')
+hyprctl keyword input:kb_layout us >/dev/null
+
 wlogout -b "$wlColms" -c 0 -r 0 -m 0 --layout "$wLayout" --css <(echo "$wlStyle") --protocol layer-shell
+
+# Restore keyboard layout after wlogout exits
+hyprctl keyword input:kb_layout "$kb_layout_restore" >/dev/null
