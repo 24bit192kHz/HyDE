@@ -1,0 +1,30 @@
+# hyprlightd configuration
+# Per-monitor gamma and backlight settings.
+
+[[monitors]]
+name = "DP-1"
+# Main monitor (LG SMARTGAME+, no DDC/CI)
+# Gamma rises to 1.0 when HDR content (mpv) is on DP-1's active workspace
+gamma_normal = 0.35
+gamma_hdr = 1.0
+# No DDC backlight control on this monitor (fields omitted = None)
+
+[[monitors]]
+name = "DP-2"
+# Secondary portrait monitor (LG ULTRAWIDE, DDC/CI on bus 3)
+# Gamma stays at 0.6 always (never HDR)
+gamma_normal = 0.35
+gamma_hdr = 0.35
+# Backlight dims when HDR content is playing on DP-1
+backlight_normal = 50
+backlight_hdr = 30
+ddc_bus = 3
+
+# Smooth transition duration (ms)
+ramp_ms = 300
+
+# Minimum interval between DDC writes (ms) — protects NVRAM
+ddc_min_interval_ms = 100
+
+# wl-gammarelay D-Bus service name
+dbus_service_name = "rs.wl-gammarelay"
