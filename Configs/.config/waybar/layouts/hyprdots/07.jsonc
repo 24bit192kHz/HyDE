@@ -45,7 +45,6 @@
         "orientation": "inherit",
         "modules": [
             "privacy",
-            "hyprland/language",
             "tray",
             "battery"
         ]
@@ -62,6 +61,7 @@
             "pulseaudio",
             "pulseaudio#microphone",
             "custom/notifications",
+            "hyprland/language",
             "custom/keybindhint"
         ]
     },
@@ -69,7 +69,6 @@
         "orientation": "inherit",
         "modules": [
             "privacy",
-            "hyprland/language",
             "tray",
             "battery"
         ]
