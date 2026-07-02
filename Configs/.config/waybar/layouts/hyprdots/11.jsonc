@@ -41,13 +41,13 @@
       "pulseaudio",
       "pulseaudio#microphone",
       "custom/updates",
-      "custom/keybindhint"
+      "hyprland/language",
+            "custom/keybindhint"
     ]
   },
   "group/pill#right2": {
     "orientation": "inherit",
-    "modules": ["privacy", "hyprland/language",
-            "tray", "battery"]
+    "modules": ["privacy", "tray", "battery"]
   },
   "group/pill#right3": {
     "orientation": "inherit",
