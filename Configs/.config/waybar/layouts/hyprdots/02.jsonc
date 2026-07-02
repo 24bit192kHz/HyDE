@@ -56,6 +56,7 @@
             "pulseaudio",
             "pulseaudio#microphone",
             "custom/updates",
+            "hyprland/language",
             "custom/keybindhint"
         ]
     },
@@ -63,7 +64,6 @@
         "orientation": "inherit",
         "modules": [
             "privacy",
-            "hyprland/language",
             "tray",
             "battery"
         ]
