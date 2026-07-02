@@ -348,7 +348,7 @@ get_rofi_pos() {
     [[ -n $HYPRLAND_INSTANCE_SIGNATURE ]] || return 1
     readarray -t curPos < <(hyprctl cursorpos -j | jq -r '.x,.y')
     eval "$(hyprctl -j monitors | jq -r '.[] | select(.focused==true) |
-        "monRes=(\(.width) \(.height) \(.scale) \(.x) \(.y)) offRes=(\(.reserved | join(" ")))"')"
+        "monRes=(\(if (.transform % 2 == 1) then .height else .width end) \(if (.transform % 2 == 1) then .width else .height end) \(.scale) \(.x) \(.y)) offRes=(\(.reserved | join(" ")))"')"
     monRes[2]="${monRes[2]//./}"
     monRes[0]=$((monRes[0] * 100 / monRes[2]))
     monRes[1]=$((monRes[1] * 100 / monRes[2]))
