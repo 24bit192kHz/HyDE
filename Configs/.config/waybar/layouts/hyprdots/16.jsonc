@@ -36,6 +36,7 @@
             "idle_inhibitor",
             "clock",
             "custom/updates",
+            "hyprland/language",
             "custom/keybindhint",
             "custom/gamemode",
             "custom/weather"
@@ -46,7 +47,6 @@
         "modules": [
             "privacy",
             "backlight",
-            "hyprland/language",
             "tray",
             "network",
             "custom/bluetooth",
