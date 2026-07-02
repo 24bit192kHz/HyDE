@@ -54,7 +54,6 @@
         "orientation": "inherit",
         "modules": [
             "privacy",
-            "hyprland/language",
             "tray",
             "battery"
         ]
