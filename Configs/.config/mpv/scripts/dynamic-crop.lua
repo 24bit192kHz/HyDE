@@ -1,0 +1,435 @@
+local mp = require "mp"
+local options = require "mp.options"
+local utils = require "mp.utils"
+
+local opts = {
+    enabled = true,
+    backend = "cuda",
+    project = "/home/btw/mhm/cuda-crop-py",
+    binary = "/home/btw/mhm/cuda-crop-py/.venv/bin/cuda-crop-py",
+    socket = "/tmp/cuda-crop-py.sock",
+    legacy_script = "~~/script-modules/dynamic-crop-legacy.lua",
+    fallback_failures = 2,
+    scan_seconds = 10,
+    read_ahead_seconds = 10,
+    apply_before_seconds = 1.50,
+    restore_before_seconds = 0.50,
+    initial_apply_window = 2.0,
+    symmetry_tolerance = 96,
+    max_letterbox_aspect = 2.60,
+    scan_interval = 2,
+    detect_limit = 26,
+    detect_round = 2,
+    min_votes = 3,
+    sample_step = 6,
+    mode = 4,
+    read_ahead_mode = 2,
+    ratio_timer = 2,
+    read_ahead_sync = 1,
+    limit_timer = 1.0,
+    crop_method = 1,
+    debug = false,
+}
+
+options.read_options(opts)
+
+local label = "dynamic_crop_cuda_crop"
+local timer = nil
+local running = false
+local last_crop = nil
+local daemon_started = false
+local legacy_started = false
+local scan_failures = 0
+local pending_timer = nil
+local pending_crop = nil
+local pending_at = nil
+local source_width = nil
+local source_height = nil
+local source_dimensions
+local remove_crop
+
+local function log(message)
+    if opts.debug then mp.msg.info(message) end
+end
+
+local function stop_cuda_timers()
+    if timer then
+        timer:kill()
+        timer = nil
+    end
+    if pending_timer then
+        pending_timer:kill()
+        pending_timer = nil
+    end
+    pending_crop = nil
+    pending_at = nil
+end
+
+local function start_legacy_backend(reason)
+    if legacy_started then return end
+    legacy_started = true
+    opts.enabled = false
+    running = false
+    stop_cuda_timers()
+    remove_crop()
+
+    local legacy = mp.command_native({"expand-path", opts.legacy_script})
+    local info = utils.file_info(legacy)
+    if not info then
+        mp.msg.error("dynamic_crop: legacy fallback missing: " .. tostring(legacy))
+        return
+    end
+
+    mp.msg.warn("dynamic_crop: CUDA backend unavailable, starting legacy fallback: " .. reason)
+    local ok, err = pcall(dofile, legacy)
+    if not ok then
+        mp.msg.error("dynamic_crop: failed to start legacy fallback: " .. tostring(err))
+    end
+end
+
+local function cuda_binary_available()
+    local info = utils.file_info(opts.binary)
+    return info and not info.is_dir
+end
+
+local function record_scan_failure(reason)
+    scan_failures = scan_failures + 1
+    mp.msg.warn(string.format(
+        "dynamic_crop: CUDA scan failure %d/%d: %s",
+        scan_failures,
+        opts.fallback_failures,
+        reason
+    ))
+    if scan_failures >= opts.fallback_failures then
+        start_legacy_backend(reason)
+    end
+end
+
+local function selected_path()
+    local path = mp.get_property("path")
+    if not path or path:match("^%a[%w+.-]*://") then return nil end
+    return mp.command_native({"expand-path", path})
+end
+
+remove_crop = function()
+    if pending_timer then
+        pending_timer:kill()
+        pending_timer = nil
+    end
+    pending_crop = nil
+    pending_at = nil
+    if last_crop then
+        mp.set_property("video-crop", "")
+        mp.set_property("video-aspect-override", "-2")
+    end
+    last_crop = nil
+end
+
+local function reset_crop_state()
+    if pending_timer then
+        pending_timer:kill()
+        pending_timer = nil
+    end
+    pending_crop = nil
+    pending_at = nil
+    last_crop = nil
+    mp.set_property("video-crop", "")
+    mp.set_property("video-aspect-override", "-2")
+end
+
+local function crop_rect(crop)
+    local w, h, x, y = crop:match("^(%d+):(%d+):(%d+):(%d+)$")
+    if not w then return nil end
+    return string.format("%sx%s+%s+%s", w, h, x, y)
+end
+
+local function crop_parts(crop)
+    local w, h, x, y = crop:match("^(%d+):(%d+):(%d+):(%d+)$")
+    if not w then return nil end
+    return tonumber(w), tonumber(h), tonumber(x), tonumber(y)
+end
+
+local function round_nearest(value, unit)
+    return math.floor((value + unit / 2) / unit) * unit
+end
+
+local function normalize_crop(crop)
+    local w, h, x, y = crop_parts(crop)
+    if not w then return crop end
+    return string.format("%d:%d:%d:%d", w, round_nearest(h, 4), x, y)
+end
+
+local function is_full_frame_crop(crop)
+    crop = normalize_crop(crop)
+    local w, h, x, y = crop_parts(crop)
+    local sw, sh = source_dimensions(crop)
+    if not w or not sw or not sh then return false end
+    return x == 0 and y == 0 and w == sw and h == sh
+end
+
+source_dimensions = function(crop)
+    local params = mp.get_property_native("video-params")
+    if params and params.w and params.h then
+        source_width = math.max(source_width or 0, params.w)
+        source_height = math.max(source_height or 0, params.h)
+    end
+
+    local w, h, _x, y = crop and crop_parts(crop) or nil
+    if w and h and y then
+        source_width = math.max(source_width or 0, w)
+        source_height = math.max(source_height or 0, h + (2 * y))
+    end
+
+    return source_width, source_height
+end
+
+local function safe_letterbox_crop(crop)
+    local w, h, x, y = crop_parts(crop)
+    local sw, sh = source_dimensions(crop)
+    if not w or not sw or not sh then return false end
+    if x ~= 0 or y < 0 or w ~= sw or h >= sh then return false end
+
+    local bottom = sh - h - y
+    local aspect = w / h
+    return bottom >= 0
+        and math.abs(y - bottom) <= opts.symmetry_tolerance
+        and aspect <= opts.max_letterbox_aspect
+end
+
+local function json_string(value)
+    return string.format("%q", value)
+end
+
+local function apply_crop(crop)
+    crop = normalize_crop(crop)
+    if crop == last_crop then return end
+
+    if is_full_frame_crop(crop) then
+        if last_crop then
+            mp.set_property("video-crop", "")
+            mp.set_property("video-aspect-override", "-2")
+            last_crop = nil
+            log("removed crop=" .. crop)
+        end
+        return
+    end
+
+    if not safe_letterbox_crop(crop) then
+        log("rejected unsafe crop=" .. crop)
+        return
+    end
+
+    local rect = crop_rect(crop)
+    if not rect then return end
+
+    mp.set_property("video-crop", rect)
+    mp.set_property("video-aspect-override", "-2")
+    last_crop = crop
+    log("applied crop=" .. crop)
+end
+
+local function build_args(path, start)
+    return {
+        opts.binary, "analyze", path,
+        "--start", string.format("%.3f", start),
+        "--duration", tostring(opts.scan_seconds),
+        "--threshold", tostring(opts.detect_limit),
+        "--round-to", tostring(opts.detect_round),
+        "--sample-step", tostring(opts.sample_step),
+        "--min-votes", tostring(opts.min_votes),
+        "--timing",
+    }
+end
+
+local function build_request(path, start)
+    return string.format(
+        '{"source":%s,"start":%.3f,"duration":%s,"threshold":%s,"round_to":%s,"sample_step":%s,"min_votes":%s,"timeline":true}\n',
+        json_string(path),
+        start,
+        tostring(opts.read_ahead_seconds),
+        tostring(opts.detect_limit),
+        tostring(opts.detect_round),
+        tostring(opts.sample_step),
+        tostring(opts.min_votes)
+    )
+end
+
+local function start_daemon()
+    if daemon_started then return end
+    daemon_started = true
+    mp.command_native({
+        name = "subprocess",
+        args = {opts.binary, "daemon", "--socket-path", opts.socket},
+        detach = true,
+        playback_only = false,
+    })
+end
+
+local function socket_ready()
+    return utils.file_info(opts.socket) ~= nil
+end
+
+local function queue_crop(crop, scan_start, relative_seconds)
+    crop = normalize_crop(crop)
+    if crop == last_crop then return end
+    if is_full_frame_crop(crop) and not last_crop then return end
+    if not is_full_frame_crop(crop) and not safe_letterbox_crop(crop) then
+        log("rejected unsafe crop=" .. crop)
+        return
+    end
+
+    local apply_before = opts.apply_before_seconds
+    if is_full_frame_crop(crop) and last_crop then
+        apply_before = opts.restore_before_seconds
+    end
+
+    local apply_at = scan_start + math.max(0, relative_seconds - apply_before)
+    if not last_crop and not is_full_frame_crop(crop) and relative_seconds <= opts.initial_apply_window then
+        apply_at = mp.get_property_number("time-pos", scan_start)
+    end
+    if pending_crop == crop and pending_at then
+        if apply_at >= pending_at - 0.05 then return end
+    end
+
+    if pending_timer then
+        pending_timer:kill()
+        pending_timer = nil
+    end
+
+    pending_crop = crop
+    pending_at = apply_at
+
+    local now = mp.get_property_number("time-pos", scan_start)
+    local delay = math.max(0, apply_at - now)
+    log(string.format("queued crop=%s apply_at=%.3f delay=%.3f", crop, apply_at, delay))
+
+    pending_timer = mp.add_timeout(delay, function()
+        pending_timer = nil
+        apply_crop(crop)
+    end)
+end
+
+local function run_scan()
+    if running or not opts.enabled then return end
+
+    local path = selected_path()
+    local time_pos = mp.get_property_number("time-pos", 0)
+    if not path or not time_pos then return end
+
+    running = true
+    start_daemon()
+    log("scan start=" .. tostring(time_pos))
+
+    if not socket_ready() then
+        running = false
+        mp.add_timeout(0.25, run_scan)
+        return
+    end
+
+    mp.command_native_async({
+        name = "subprocess",
+        args = {"ncat", "-U", opts.socket},
+        stdin_data = build_request(path, time_pos),
+        capture_stdout = true,
+        capture_stderr = true,
+        playback_only = true,
+    }, function(success, result, error)
+        running = false
+
+        if not success or result.status ~= 0 then
+            daemon_started = false
+            if opts.debug then
+                mp.msg.warn(
+                    "cuda crop socket failed: status="
+                    .. tostring(result and result.status)
+                    .. " stderr="
+                    .. tostring(result and result.stderr)
+                    .. " error="
+                    .. tostring(error)
+                )
+            end
+            local args = build_args(path, time_pos)
+            mp.command_native_async({
+                name = "subprocess",
+                args = args,
+                capture_stdout = true,
+                capture_stderr = true,
+                playback_only = true,
+            }, function(fallback_success, fallback_result, fallback_error)
+                if not fallback_success or fallback_result.status ~= 0 then
+                    record_scan_failure(tostring(fallback_error or fallback_result.error_string or fallback_result.status))
+                    mp.msg.warn(
+                        "cuda crop scan failed: "
+                        .. tostring(fallback_error or fallback_result.error_string or fallback_result.status)
+                    )
+                    return
+                end
+                scan_failures = 0
+
+                local fallback_json = (fallback_result.stdout or ""):match("(%b{})")
+                local fallback_parsed = fallback_json and utils.parse_json(fallback_json) or nil
+                if fallback_parsed and fallback_parsed.crop then
+                    apply_crop(normalize_crop(fallback_parsed.crop))
+                else
+                    log("no stable crop found")
+                end
+            end)
+            return
+        end
+
+        local json = (result.stdout or ""):match("(%b{})")
+        local parsed = json and utils.parse_json(json) or nil
+        if parsed and parsed.ok and parsed.crop then
+            scan_failures = 0
+            queue_crop(normalize_crop(parsed.crop), time_pos, tonumber(parsed.relative_seconds) or 0)
+        else
+            log("no stable crop found")
+        end
+    end)
+end
+
+local function schedule()
+    if timer then timer:kill() end
+    timer = mp.add_periodic_timer(opts.scan_interval, function()
+        run_scan()
+    end)
+    start_daemon()
+    mp.add_timeout(0.25, run_scan)
+end
+
+mp.register_event("file-loaded", function()
+    source_width = nil
+    source_height = nil
+    scan_failures = 0
+    if opts.backend == "legacy" then
+        start_legacy_backend("legacy backend selected")
+    elseif opts.enabled and not cuda_binary_available() then
+        start_legacy_backend("missing CUDA analyzer binary: " .. opts.binary)
+    elseif opts.enabled then
+        reset_crop_state()
+        schedule()
+    end
+end)
+
+mp.register_event("end-file", function()
+    if timer then
+        timer:kill()
+        timer = nil
+    end
+    remove_crop()
+end)
+
+mp.add_key_binding(nil, "cuda-crop-test-toggle", function()
+    opts.enabled = not opts.enabled
+    if opts.enabled then
+        schedule()
+        mp.osd_message("cuda-crop-test enabled")
+    else
+        if timer then
+            timer:kill()
+            timer = nil
+        end
+        remove_crop()
+        mp.osd_message("cuda-crop-test disabled")
+    end
+end)
