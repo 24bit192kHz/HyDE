@@ -2,7 +2,7 @@
 # Per-monitor brightness and backlight settings.
 
 [[monitors]]
-name = "DP-1"
+name = "DP-2"
 # Main monitor (LG SMARTGAME+, no DDC/CI)
 # Brightness: 1.0 = full (HDR), lower = dimmer
 brightness_normal = 0.7
@@ -10,14 +10,13 @@ brightness_hdr = 1.0
 # No DDC backlight control on this monitor (fields omitted = None)
 
 [[monitors]]
-name = "DP-2"
-# Secondary portrait monitor (LG ULTRAWIDE, DDC/CI on bus 3)
+name = "DP-1"
+# Secondary portrait monitor (LG ULTRAWIDE, DDC/CI on bus 1)
 brightness_normal = 0.7
 brightness_hdr = 1.0
-# Backlight dims when HDR content is playing on DP-1
 backlight_normal = 50
 backlight_hdr = 30
-ddc_bus = 3
+ddc_bus = 1
 
 # Smooth transition duration (ms)
 ramp_ms = 300
