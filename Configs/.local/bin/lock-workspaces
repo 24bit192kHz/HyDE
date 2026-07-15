@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+# Lock screen with display-agnostic workspace isolation.
+
+set -euo pipefail
+
+# Ignore duplicate manual/idle lock events while a lock cycle is active.
+exec {lock_fd}>"${XDG_RUNTIME_DIR:?}/lock-workspaces.lock"
+flock -n "$lock_fd" || exit 0
+
+# Save per-monitor workspace state, special workspaces, focus, and cursor.
+monitors_json=$(hyprctl monitors -j)
+cursor_pos=$(hyprctl cursorpos)
+focused_mon=$(jq -r '.[] | select(.focused).name' <<<"$monitors_json")
+state=$(jq '
+  [.[] | {
+    name,
+    ws_id: .activeWorkspace.id,
+    sws_on: ((.specialWorkspace.name // "") != ""),
+    sws: (.specialWorkspace.name | if . != "" then ltrimstr("special:") else "" end)
+  }]
+' <<<"$monitors_json")
+
+# Close special workspaces before moving each monitor to an empty workspace.
+while read -r mon; do
+    mname=$(jq -r '.name' <<<"$mon")
+    sws_on=$(jq -r '.sws_on' <<<"$mon")
+    sws=$(jq -r '.sws' <<<"$mon")
+
+    if [[ "$sws_on" == true && -n "$sws" ]]; then
+        hyprctl dispatch focusmonitor "$mname" >/dev/null
+        hyprctl dispatch togglespecialworkspace "$sws" >/dev/null
+    fi
+done < <(jq -c '.[]' <<<"$state")
+
+i=0
+while read -r mname; do
+    hyprctl dispatch focusmonitor "$mname" >/dev/null
+    hyprctl dispatch workspace "$((10000 + i))" >/dev/null
+    ((i += 1))
+done < <(jq -r '.[].name' <<<"$monitors_json")
+
+sleep 0.3
+
+# Retry if hyprlock crashes; a normal unlock returns zero.
+while ! hyprlock; do
+    hyprctl --instance 0 'keyword misc:allow_session_lock_restore 1' >/dev/null
+    sleep 0.1
+done
+
+sleep 0.5
+
+# Restore each connected monitor to its saved workspace.
+live_monitors=$(hyprctl monitors -j)
+while read -r mon; do
+    mname=$(jq -r '.name' <<<"$mon")
+
+    if ! jq -e --arg m "$mname" 'any(.[]; .name == $m)' \
+        <<<"$live_monitors" >/dev/null; then
+        continue
+    fi
+
+    ws_id=$(jq -r '.ws_id' <<<"$mon")
+    sws_on=$(jq -r '.sws_on' <<<"$mon")
+    sws=$(jq -r '.sws' <<<"$mon")
+
+    hyprctl dispatch focusmonitor "$mname" >/dev/null
+    hyprctl dispatch workspace "$ws_id" >/dev/null
+
+    if [[ "$sws_on" == true && -n "$sws" ]]; then
+        hyprctl dispatch togglespecialworkspace "$sws" >/dev/null
+    fi
+done < <(jq -c '.[]' <<<"$state")
+
+read -r cursor_x cursor_y <<<"${cursor_pos/,/ }"
+hyprctl dispatch movecursor "$cursor_x" "$cursor_y" >/dev/null
+hyprctl dispatch focusmonitor "$focused_mon" >/dev/null
