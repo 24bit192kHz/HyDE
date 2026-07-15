@@ -82,6 +82,9 @@ P|${HOME}/.config|lsd|lsd
 P|${HOME}/.config|fastfetch|fastfetch
 O|${HOME}/.local/share/fastfetch/presets|hyde|fastfetch
 
+ MPV 
+P|${HOME}/.config/mpv|scripts/mpv-sdr-screenshot.lua|mpv
+
 S|${HOME}/.config/kitty|hyde.conf theme.conf|kitty
 P|${HOME}/.config/kitty|kitty.conf|kitty
 
