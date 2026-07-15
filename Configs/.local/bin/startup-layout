@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+
+# Fast polling function: waits exactly until the window maps, no longer.
+# Usage: wait_for_window "title" "my_window_title"
+#    or: wait_for_window "class" "my_window_class"
+sleep 8
+wait_for_window() {
+    local attr="$1"
+    local val="$2"
+    for i in {1..100}; do
+        if hyprctl clients -j | grep -q "\"$attr\": \"$val\""; then
+            sleep 0.05 # Tiny buffer for Dwindle to settle the node
+            return
+        fi
+        sleep 0.02
+    done
+}
+
+ORIG_SPLIT=$(hyprctl getoption dwindle:force_split -j | jq '.int')
+ORIG_SPLIT=${ORIG_SPLIT:-0}
+hyprctl keyword dwindle:force_split 2
+
+# ==========================================
+# WORKSPACE 1: Clock, dmesg, Shell (25/25/50)
+# ==========================================
+hyprctl dispatch exec "[workspace 1 silent] kitty --title clock_ws1 -e sh -c 'cd ~/test/time-arabic && ./clock -s 1.2 -f ko-methlama-bold.otf'"
+wait_for_window "title" "clock_ws1"
+
+hyprctl dispatch exec "[workspace 1 silent] kitty --title dmesg_ws1 -e dmesg -w"
+wait_for_window "title" "dmesg_ws1"
+
+hyprctl dispatch resizewindowpixel "0 -626,title:^(clock_ws1)$"
+sleep 0.02
+
+hyprctl dispatch exec "[workspace 1 silent] kitty --title shell_ws1"
+wait_for_window "title" "shell_ws1"
+
+hyprctl dispatch resizewindowpixel "0 -311,title:^(dmesg_ws1)$"
+sleep 0.02
+
+# ==========================================
+# WORKSPACE 2: Telegram (Top), ZapZap (Bottom)
+# ==========================================
+# Telegram maps first, taking 100%
+hyprctl dispatch exec "[workspace 2 silent] /usr/bin/Telegram"
+wait_for_window "class" "org.telegram.desktop"
+
+# ZapZap maps second. Because force_split=2, it perfectly splits to the Bottom 50%
+hyprctl dispatch exec "[workspace 2 silent] /usr/bin/zapzap"
+wait_for_window "class" "com.rtosta.zapzap"
+
+# ==========================================
+# WORKSPACE 3: Brave
+# ==========================================
+#hyprctl dispatch exec "[workspace 3 silent] /usr/bin/librewolf"
+#hyprctl dispatch exec "[workspace 3 silent] sh -c 'until ping -c1 -W1 8.8.8.8 &>/dev/null; do sleep 5; done; /usr/bin/librewolf'"
+hyprctl dispatch exec "[workspace 3 silent] sh -c 'killall -9 brave 2>/dev/null; until ping -c1 -W1 8.8.8.8 &>/dev/null; do sleep 5; done; exec brave-origin --password-store=basic'"
+hyprctl dispatch exec "[workspace 4 silent] kitty --title shell_ws1"
+
+# Restore original split behavior
+hyprctl keyword dwindle:force_split "$ORIG_SPLIT"
