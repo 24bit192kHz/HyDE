@@ -1,3 +1,8 @@
+#  User PATH 
+typeset -U path PATH
+path=("$HOME/mhm/scripts" $path)
+export PATH
+
 #  Startup 
 # Commands to execute on startup (before the prompt is shown)
 # Check if the interactive shell option is set
