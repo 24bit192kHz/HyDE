@@ -54,7 +54,11 @@ wait_for_window "class" "com.rtosta.zapzap"
 # ==========================================
 #hyprctl dispatch exec "[workspace 3 silent] /usr/bin/librewolf"
 #hyprctl dispatch exec "[workspace 3 silent] sh -c 'until ping -c1 -W1 8.8.8.8 &>/dev/null; do sleep 5; done; /usr/bin/librewolf'"
-hyprctl dispatch exec "[workspace 3 silent] sh -c 'killall -9 brave 2>/dev/null; until ping -c1 -W1 8.8.8.8 &>/dev/null; do sleep 5; done; exec brave-origin --password-store=basic'"
+killall -9 brave brave-origin 2>/dev/null
+until ping -c1 -W1 8.8.8.8 &>/dev/null; do sleep 5; done
+hyprctl dispatch exec "[workspace 3 silent] brave-origin --password-store=basic"
+wait_for_window "initialClass" "brave-origin"
+hyprctl dispatch movetoworkspacesilent "3,class:^(brave-origin)$"
 hyprctl dispatch exec "[workspace 4 silent] kitty --title shell_ws1"
 
 # Restore original split behavior
