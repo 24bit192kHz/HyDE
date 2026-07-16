@@ -57,8 +57,15 @@ wait_for_window "class" "com.rtosta.zapzap"
 killall -9 brave brave-origin 2>/dev/null
 until ping -c1 -W1 8.8.8.8 &>/dev/null; do sleep 5; done
 hyprctl dispatch exec "[workspace 3 silent] brave-origin --password-store=basic"
-wait_for_window "initialClass" "brave-origin"
-hyprctl dispatch movetoworkspacesilent "3,class:^(brave-origin)$"
+brave_address=""
+for _ in {1..300}; do
+    brave_address=$(hyprctl clients -j | jq -r '.[] | select(.initialClass == "brave-origin") | .address' | head -n1)
+    [[ -n "$brave_address" ]] && break
+    sleep 0.1
+done
+if [[ -n "$brave_address" ]]; then
+    hyprctl dispatch movetoworkspacesilent "3,address:$brave_address"
+fi
 hyprctl dispatch exec "[workspace 4 silent] kitty --title shell_ws1"
 
 # Restore original split behavior
