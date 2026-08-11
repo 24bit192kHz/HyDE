@@ -344,12 +344,27 @@ get_hyprConf() {
         echo "$gsVal"
     fi
 }
+# Reads a monitor scale as a whole percent, so 100 comes back for 1, 1.0 and
+# 1.00 alike. The old inline sed trick turned an integer scale (1) into 1 and
+# left get_rofi_pos dividing by a hundred times too small, placing rofi off
+# screen at the monitor edges.
+get_monitor_scale() {
+    local raw=${1:-}
+    if [ -z "${raw}" ]; then
+        raw=$(hyprctl -j monitors 2>/dev/null | jq -r 'first(.[] | select(.focused==true) | .scale) // empty' 2>/dev/null)
+    fi
+    awk -v raw="${raw}" 'BEGIN {
+        scale = raw + 0
+        if (scale <= 0) scale = 1
+        printf "%d", scale * 100 + 0.5
+    }'
+}
 get_rofi_pos() {
     [[ -n $HYPRLAND_INSTANCE_SIGNATURE ]] || return 1
     readarray -t curPos < <(hyprctl cursorpos -j | jq -r '.x,.y')
     eval "$(hyprctl -j monitors | jq -r '.[] | select(.focused==true) |
         "monRes=(\(if (.transform % 2 == 1) then .height else .width end) \(if (.transform % 2 == 1) then .width else .height end) \(.scale) \(.x) \(.y)) offRes=(\(.reserved | join(" ")))"')"
-    monRes[2]="${monRes[2]//./}"
+    monRes[2]="$(get_monitor_scale "${monRes[2]}")"
     monRes[0]=$((monRes[0] * 100 / monRes[2]))
     monRes[1]=$((monRes[1] * 100 / monRes[2]))
     curPos[0]=$((curPos[0] - monRes[3]))
@@ -448,4 +463,4 @@ dconf_write() {
         print_log -sec "dconf" -warn "failed to set" "$key"
     fi
 }
-export -f get_hyprConf get_rofi_pos is_hovered toml_write get_hashmap get_aurhlpr set_conf set_hash check_package get_themes print_log pkg_installed paste_string extract_thumbnail accepted_mime_types dconf_write send_notifs export_hyde_config
+export -f get_hyprConf get_monitor_scale get_rofi_pos is_hovered toml_write get_hashmap get_aurhlpr set_conf set_hash check_package get_themes print_log pkg_installed paste_string extract_thumbnail accepted_mime_types dconf_write send_notifs export_hyde_config
