@@ -1,7 +1,6 @@
--- Keybinds for this machine: 1:1 with live ~/.config/hypr/keybindings.conf
--- plus the personal binds from userprefs.conf. Lua-only extras (altab,
--- calculator, numpad 11-20, Super+Alt+F4, wallpaper ←/→, Super+Ctrl+S OCR)
--- are omitted on purpose.
+-- Keybinds for this machine: 1:1 with the live Hyprland map, including
+-- personal binds. Lua-only extras (altab, calculator, numpad 11-20,
+-- Super+Alt+F4, wallpaper ←/→, Super+Ctrl+S OCR) are omitted on purpose.
 hyde.binds.dedup = true
 
 local _apps = hyde.config.app
