@@ -242,13 +242,14 @@ end
 local required_defaults = {
     "SUPER + SHIFT + G",
     "SUPER + SHIFT + P",
-    "SUPER + CTRL + S",
+    "SUPER + O",
     "SUPER + SHIFT + W",
     "SUPER + SHIFT + R",
     "SUPER + SHIFT + T",
     "SUPER + ALT + T",
     "ALT + F4",
     "SUPER + DELETE",
+    "CTRL + ALT + DELETE",
     "SHIFT + F11",
     "SUPER + SHIFT + F",
     "SUPER + CTRL + H",
@@ -258,11 +259,17 @@ local required_defaults = {
     "SUPER + SHIFT + UP",
     "SUPER + SHIFT + DOWN",
     "SUPER + J",
+    "F9",
     "F10",
     "F11",
     "F12",
-    "SUPER + ALT + RIGHT",
-    "SUPER + ALT + LEFT",
+    "SUPER + F",
+    "SUPER + C",
+    "SUPER + SHIFT + C",
+    "SUPER + F1",
+    "SUPER + F11",
+    "SUPER + F12",
+    "SUPER + D",
     "SUPER + ALT + UP",
     "SUPER + ALT + DOWN",
     "SUPER + SHIFT + Y",
@@ -272,14 +279,8 @@ local required_defaults = {
     "SUPER + S",
     "SUPER + SHIFT + S",
     "SUPER + ALT + S",
-    "SUPER + ALT + F4",
-    "ALT + P",
-    "ALT + SHIFT + TAB",
-    "SUPER + SHIFT + K",
-    "SUPER + SHIFT + slash",
-    "SUPER + CONTROL + M",
-    "SUPER + KP_1",
-    "SUPER + SHIFT + KP_1"
+    "ALT + TAB",
+    "SUPER + CONTROL + M"
 }
 
 for _, combo in ipairs(required_defaults) do
@@ -287,7 +288,6 @@ for _, combo in ipairs(required_defaults) do
 end
 
 local screenshot_commands = {
-    ["SUPER + CTRL + S"] = "hyde-shell screenshot sc",
     ["SUPER + P"] = "hyde-shell screenshot s",
     ["SUPER + CTRL + P"] = "hyde-shell screenshot sf",
     ["SUPER + ALT + P"] = "hyde-shell screenshot m",

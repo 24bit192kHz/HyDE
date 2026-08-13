@@ -17,8 +17,6 @@ end
 -- Machine overrides for btw (CachyOS + Hyprland + RTX 3080 Ti).
 -- Ported from live userprefs.conf / keybindings.conf onto HyDE's lua-only tree.
 
-local MOD = hyde.config.modifiers.main
-
 hl.on("hyprland.start", function()
 	hl.exec_cmd("openrgb -p pf1")
 	hl.exec_cmd("bash ~/.local/bin/startup-layout")
@@ -106,40 +104,9 @@ hl.window_rule({
 	move = "(cursor_x-(window_w*0.5)) (cursor_y-(window_h*0.5))",
 })
 
--- Overrides HyDE's Super+C editor bind (same flags, last bind wins with dedup).
-hl.bind(MOD .. " + C", hl.dsp.exec_cmd("bash ~/mhm/scripts/center.sh"), {
-	description = "center window",
-})
-hl.bind(MOD .. " + SHIFT + C", hl.dsp.exec_cmd("bash ~/mhm/scripts/resize-30.sh"), {
-	description = "resize window",
-})
-hl.bind(MOD .. " + F", hl.dsp.window.fullscreen(0), {
-	description = "fullscreen",
-})
-hl.bind("F9", hl.dsp.exec_cmd("playerctl pause && pamixer -m"), {
-	description = "pause media and mute output",
-})
-hl.bind(MOD .. " + ALT + N", hl.dsp.exec_cmd("/home/btw/.local/bin/earth-native control"), {
-	description = "Control native Earth renderer",
-})
-hl.bind(MOD .. " + ALT + SHIFT + N", hl.dsp.exec_cmd("/home/btw/.local/bin/earth-native restart"), {
-	description = "Restart native Earth renderer",
-})
-hl.bind(MOD .. " + F11", hl.dsp.exec_cmd("/home/btw/mhm/hyprshaderd/hyprshaderd dimmer"), {
-	description = "decrease brightness via hyprshaderd",
-	repeating = true,
-})
-hl.bind(MOD .. " + F12", hl.dsp.exec_cmd("/home/btw/mhm/hyprshaderd/hyprshaderd brighter"), {
-	description = "increase brightness via hyprshaderd",
-	repeating = true,
-})
-hl.bind(MOD .. " + F1", hl.dsp.exec_cmd("/home/btw/mhm/scripts/songid.sh"), {
-	description = "identify playing song",
-})
-hl.bind(MOD .. " + O", hl.dsp.exec_cmd("/home/btw/mhm/scripts/ocr.sh"), {
-	description = "capture text with OCR",
-})
-hl.bind(MOD .. " + L", hl.dsp.exec_cmd("~/mhm/scripts/lock.sh"), {
-	locked = true,
-	description = "[Window Management] lock session",
-})
+-- Lua's bind parser drops ALT_R as a modifier (it is a keysym), so the live
+-- Alt_R+Control_R waybar toggle cannot be registered with hl.bind. Inject the
+-- exact hyprlang bind instead.
+hl.exec_cmd(
+	"hyprctl keyword bindd 'Alt_R, Control_R, [Window Management] toggle waybar and reload config, exec, hyde-shell waybar --hide'"
+)
