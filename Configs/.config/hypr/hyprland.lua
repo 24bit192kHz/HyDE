@@ -21,10 +21,28 @@ hl.on("hyprland.start", function()
 	hl.exec_cmd("openrgb -p pf1")
 	hl.exec_cmd("bash ~/.local/bin/startup-layout")
 	hl.exec_cmd("xrdb -merge ~/.Xresources")
+	hl.exec_cmd("easyeffects --service-mode --hide-window")
 	hl.exec_cmd("/home/btw/mhm/hyprshaderd/hyprshaderd")
 	hl.exec_cmd("/home/btw/.local/bin/earth-native start")
 	hl.exec_cmd("systemctl --user start pcpanel.service")
 end)
+
+-- Match live monitors.conf (hyprlang session). HDR stays commented there.
+hl.monitor({
+	output = "DP-1",
+	mode = "2560x1080@99.94",
+	position = "0x0",
+	scale = 1.0,
+	bitdepth = 10,
+	transform = 1,
+})
+hl.monitor({
+	output = "DP-2",
+	mode = "3440x1440@240.09",
+	position = "1080x757",
+	scale = 1.0,
+	bitdepth = 10,
+})
 
 hl.env("WALLPAPER_BACKEND", "hyprpaper")
 hl.env("GTK_USE_PORTAL", "1")
