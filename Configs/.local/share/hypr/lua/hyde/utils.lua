@@ -32,7 +32,27 @@ function util.check_require(module_name)
 
   local filename = package.searchpath(module_name, package.path)
   if filename then
-    return require(module_name)
+    local ok, mod = pcall(require, module_name)
+    if ok then
+      return mod
+    end
+  end
+
+  -- Hyprland's Lua searchpath often skips XDG_STATE_HOME. Fall back to dofile.
+  if module_name:match("^lua_state%.") then
+    local rel = module_name:gsub("%.", "/") .. ".lua"
+    local home = os.getenv("HOME") or ""
+    local candidates = {
+      (os.getenv("XDG_CONFIG_HOME") or (home .. "/.config")) .. "/hypr/" .. rel,
+      (os.getenv("XDG_DATA_HOME") or (home .. "/.local/share")) .. "/hypr/lua/" .. rel,
+      (os.getenv("XDG_STATE_HOME") or (home .. "/.local/state")) .. "/hyde/" .. rel,
+    }
+    for i = 1, #candidates do
+      local ok, mod = pcall(dofile, candidates[i])
+      if ok and type(mod) == "table" then
+        return mod
+      end
+    end
   end
 
   return nil
