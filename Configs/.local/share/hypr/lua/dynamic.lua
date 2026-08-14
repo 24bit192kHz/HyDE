@@ -1,4 +1,12 @@
 local color = check_require("lua_state.colors") or {}
+if not next(color) then
+	local home = os.getenv("HOME") or ""
+	local fallback = (os.getenv("XDG_CONFIG_HOME") or (home .. "/.config")) .. "/hypr/lua_state/colors.lua"
+	local ok, mod = pcall(dofile, fallback)
+	if ok and type(mod) == "table" then
+		color = mod
+	end
+end
 
 if next(color) then
 	hl.config(

@@ -128,3 +128,22 @@ hl.window_rule({
 hl.exec_cmd(
 	"hyprctl keyword bindd 'Alt_R, Control_R, [Window Management] toggle waybar and reload config, exec, hyde-shell waybar --hide'"
 )
+
+-- HyDE sets a pink overlay when lua_state.colors is invisible to Hyprland's
+-- package.searchpath. Apply the palette from the mirrored file and clear it.
+do
+	local colors_file = (os.getenv("XDG_CONFIG_HOME") or (os.getenv("HOME") .. "/.config"))
+		.. "/hypr/lua_state/colors.lua"
+	local ok, color = pcall(dofile, colors_file)
+	if ok and type(color) == "table" and color._pry4_rgba then
+		hl.config({
+			general = {
+				col = {
+					active_border = { colors = { color._pry4_rgba, color._4xa1_rgba }, angle = 45 },
+					inactive_border = { colors = { color._pry1_rgba, color._pry2_rgba }, angle = 45 },
+				},
+			},
+		})
+	end
+	hl.exec_cmd("hyprctl seterror disable")
+end
