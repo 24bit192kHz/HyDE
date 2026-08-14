@@ -88,8 +88,6 @@ hl.config({
 	},
 })
 
-hl.curve("liner", { type = "bezier", points = { { 1, 1 }, { 1, 1 } } })
-
 hl.animation({ leaf = "windows", enabled = true, speed = 2.5, bezier = "default", style = "popin 60%" })
 hl.animation({ leaf = "windowsIn", enabled = true, speed = 2.5, bezier = "default", style = "popin 60%" })
 hl.animation({ leaf = "windowsOut", enabled = true, speed = 2.5, bezier = "default", style = "popin 60%" })
@@ -103,8 +101,8 @@ hl.animation({ leaf = "fadeShadow", enabled = true, speed = 2.5, bezier = "defau
 hl.animation({ leaf = "fadeDim", enabled = true, speed = 2.5, bezier = "default" })
 hl.animation({ leaf = "fadeLayers", enabled = true, speed = 2.5, bezier = "default" })
 hl.animation({ leaf = "workspaces", enabled = true, speed = 2.5, bezier = "default", style = "slide" })
-hl.animation({ leaf = "border", enabled = true, speed = 2.5, bezier = "liner" })
-hl.animation({ leaf = "borderangle", enabled = true, speed = 2.5, bezier = "liner", style = "once" })
+hl.animation({ leaf = "border", enabled = true, speed = 2.5, bezier = "linear" })
+hl.animation({ leaf = "borderangle", enabled = true, speed = 2.5, bezier = "linear", style = "once" })
 hl.animation({ leaf = "specialWorkspace", enabled = false, speed = 0, bezier = "default" })
 
 hl.window_rule({
