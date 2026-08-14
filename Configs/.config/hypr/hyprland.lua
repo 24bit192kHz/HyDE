@@ -88,6 +88,8 @@ hl.config({
 	},
 })
 
+hl.curve("liner", { type = "bezier", points = { { 1, 1 }, { 1, 1 } } })
+
 hl.animation({ leaf = "windows", enabled = true, speed = 2.5, bezier = "default", style = "popin 60%" })
 hl.animation({ leaf = "windowsIn", enabled = true, speed = 2.5, bezier = "default", style = "popin 60%" })
 hl.animation({ leaf = "windowsOut", enabled = true, speed = 2.5, bezier = "default", style = "popin 60%" })
