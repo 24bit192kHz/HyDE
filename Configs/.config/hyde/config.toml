@@ -2,3 +2,11 @@
 # Environment variables should be on top
 # Updated config.toml file can be found at $HOME/.local/share/hyde/config.toml
 "$schema" = "https://raw.githubusercontent.com/HyDE-Project/HyDE/refs/heads/master/Configs/.local/share/hyde/schema/config.toml.json"
+
+# earth-native (zwlr_layer_shell background) is the wallpaper on this machine.
+# Do not start HyDE wallpaper.sh / awww / hyprpaper — they cover Earth.
+[wallpaper]
+backend = "none"
+
+[desktop.start]
+wallpaper = ""

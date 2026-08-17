@@ -15,118 +15,151 @@ if not hyde then
 end
 
 -- Machine overrides for btw (CachyOS + Hyprland + RTX 3080 Ti).
--- Ported from live userprefs.conf / keybindings.conf onto HyDE's lua-only tree.
+-- monitors.conf is still hyprlang from nwg-displays. Personal overrides live
+-- in userprefs.lua (ported from userprefs.conf).
 
-hl.on("hyprland.start", function()
-	hl.exec_cmd("openrgb -p pf1")
-	hl.exec_cmd("bash ~/.local/bin/startup-layout")
-	hl.exec_cmd("xrdb -merge ~/.Xresources")
-	hl.exec_cmd("easyeffects --service-mode --hide-window")
-	hl.exec_cmd("/home/btw/mhm/hyprshaderd/hyprshaderd")
-	hl.exec_cmd("/home/btw/.local/bin/earth-native start")
-	hl.exec_cmd("systemctl --user start pcpanel.service")
-end)
+local cfg = os.getenv("XDG_CONFIG_HOME") or ((os.getenv("HOME") or "") .. "/.config")
+local hypr = cfg .. "/hypr"
+local load_hyprlang = dofile(hypr .. "/load_hyprlang.lua")
 
--- Match live monitors.conf (hyprlang session). HDR stays commented there.
-hl.monitor({
-	output = "DP-1",
-	mode = "2560x1080@99.94",
-	position = "0x0",
-	scale = 1.0,
-	bitdepth = 10,
-	transform = 1,
-})
-hl.monitor({
-	output = "DP-2",
-	mode = "3440x1440@240.09",
-	position = "1080x757",
-	scale = 1.0,
-	bitdepth = 10,
-})
+load_hyprlang.apply_monitors(hypr .. "/monitors.conf")
+local userprefs = dofile(hypr .. "/userprefs.lua")
+dofile(hypr .. "/user_windowrules.lua")
+local user_exec_once = (userprefs and userprefs.exec_once) or {}
 
-hl.env("WALLPAPER_BACKEND", "hyprpaper")
-hl.env("GTK_USE_PORTAL", "1")
-hl.env("GDK_DEBUG", "portals")
-hl.env("HYPRLIGHTD_BRIGHTNESS_NORMAL", "0.55")
+-- Hyprland's hl.on replaces, it does not stack. Registering only machine
+-- autostart here would skip HyDE's start_up.lua (waybar, dunst, hypridle).
+local function check_exec(cmd)
+	if type(cmd) == "string" and cmd ~= "" then
+		hl.exec_cmd(cmd)
+	end
+end
 
-hl.config({
-	input = {
-		kb_layout = "us,ara",
-		kb_options = "grp:caps_toggle",
-		repeat_delay = 250,
-		repeat_rate = 50,
-		touchpad = {
-			natural_scroll = false,
-		},
-	},
-	render = {
-		cm_auto_hdr = 1,
-		cm_enabled = true,
-	},
-	debug = {
-		full_cm_proto = true,
-	},
-	decoration = {
-		active_opacity = 1.0,
-		inactive_opacity = 1.0,
-		fullscreen_opacity = 1.0,
-		blur = {
-			enabled = true,
-			size = 8,
-			passes = 2,
-		},
-	},
-	misc = {
-		allow_session_lock_restore = true,
-	},
-	workspace = {
-		"1,monitor:DP-1",
-		"2,monitor:DP-1",
-		"9,monitor:DP-1",
-		"3,monitor:DP-2",
-		"4,monitor:DP-2",
-	},
-})
+local function hyde_session_start()
+	local hs = (hyde.config and hyde.config.start) or {}
+	check_exec(hs.dbus_share_picker)
+	check_exec(hs.systemd_share_picker)
+	-- HyDE start_up.lua never runs xdg_portal_reset, and the lua path it
+	-- names (resetxdgportal.lua) does not exist. After a compositor restart
+	-- xdph dies with "Couldn't connect to a wayland compositor".
+	check_exec("hyde-shell resetxdgportal.sh")
+	check_exec("uwsm finalize")
+	-- Skip hs.wallpaper: earth-native owns background layers. awww/hyprpaper must not start.
+	check_exec(hs.bar)
+	-- Skip hyprsunset: it owns hyprland-ctm-control-v1 exclusively, so
+	-- hyprshaderd cannot dim. Night-light stays off on this machine.
+	check_exec(hs.notifications)
+	check_exec(hs.auth_dialogue)
+	if hyde.config and hyde.config.ui then
+		check_exec("hyprctl setcursor " .. hyde.config.ui.cursor_theme .. " " .. hyde.config.ui.cursor_size)
+	end
+	check_exec(hs.text_clipboard)
+	check_exec(hs.image_clipboard)
+	check_exec(hs.clipboard_persist)
+	check_exec(hs.idle_daemon)
+	check_exec(hs.battery_notify)
+	check_exec(hs.applet_network_manager)
+	check_exec(hs.applet_removable_media)
+	check_exec(hs.applet_bluetooth)
+	check_exec(hs.hyde_config)
+end
 
-hl.animation({ leaf = "windows", enabled = true, speed = 2.5, bezier = "default", style = "popin 60%" })
-hl.animation({ leaf = "windowsIn", enabled = true, speed = 2.5, bezier = "default", style = "popin 60%" })
-hl.animation({ leaf = "windowsOut", enabled = true, speed = 2.5, bezier = "default", style = "popin 60%" })
-hl.animation({ leaf = "windowsMove", enabled = true, speed = 2.5, bezier = "default", style = "slide" })
-hl.animation({ leaf = "layers", enabled = true, speed = 2.5, bezier = "default", style = "popin" })
-hl.animation({ leaf = "fade", enabled = true, speed = 2.5, bezier = "default" })
-hl.animation({ leaf = "fadeIn", enabled = true, speed = 2.5, bezier = "default" })
-hl.animation({ leaf = "fadeOut", enabled = true, speed = 2.5, bezier = "default" })
-hl.animation({ leaf = "fadeSwitch", enabled = true, speed = 2.5, bezier = "default" })
-hl.animation({ leaf = "fadeShadow", enabled = true, speed = 2.5, bezier = "default" })
-hl.animation({ leaf = "fadeDim", enabled = true, speed = 2.5, bezier = "default" })
-hl.animation({ leaf = "fadeLayers", enabled = true, speed = 2.5, bezier = "default" })
-hl.animation({ leaf = "workspaces", enabled = true, speed = 2.5, bezier = "default", style = "slide" })
-hl.animation({ leaf = "border", enabled = true, speed = 2.5, bezier = "linear" })
-hl.animation({ leaf = "borderangle", enabled = true, speed = 2.5, bezier = "linear", style = "once" })
-hl.animation({ leaf = "specialWorkspace", enabled = false, speed = 0, bezier = "default" })
+local function stop_hyprsunset()
+	-- systemd Restart=always will bring this back after a compositor restart
+	-- unless we stop the unit. It exclusive-owns CTM and kills hyprshaderd's dim.
+	check_exec(
+		"sh -c 'systemctl --user stop hyde-Hyprland-blue-light-filter.service 2>/dev/null; pkill -x hyprsunset || true'"
+	)
+end
 
-hl.window_rule({
-	match = { class = "^(kitty)$" },
-	no_blur = true,
-})
+local function start_hyprshaderd(force)
+	local kill_old = ""
+	if force then
+		kill_old = "pkill -x hyprshaderd || true; sleep 0.2; "
+	end
+	check_exec(
+		"sh -c 'systemctl --user stop hyde-Hyprland-blue-light-filter.service 2>/dev/null; pkill -x hyprsunset || true; "
+			.. kill_old
+			.. "pgrep -x hyprshaderd >/dev/null || exec /home/btw/mhm/hyprshaderd/hyprshaderd'"
+	)
+end
 
-hl.window_rule({
-	match = { class = "^(com.getpcpanel.MainFX)$" },
-	workspace = "9 silent",
-})
+local function start_user_once(cmd, on_reload)
+	if type(cmd) ~= "string" or cmd == "" then
+		return
+	end
+	if on_reload and cmd:find("startup-layout", 1, true) then
+		return
+	end
+	if cmd:find("hyprshaderd", 1, true) then
+		start_hyprshaderd()
+		return
+	end
+	if cmd:find("easyeffects", 1, true) then
+		check_exec("sh -c 'pgrep -f easyeffects >/dev/null || exec easyeffects --service-mode --hide-window'")
+		return
+	end
+	check_exec(cmd)
+end
 
-hl.window_rule({
-	name = "furmark_at_cursor",
-	match = { initial_title = "^(GeeXLab Player)(.*)$" },
-	float = true,
-	move = "(cursor_x-(window_w*0.5)) (cursor_y-(window_h*0.5))",
-})
+local rt = os.getenv("XDG_RUNTIME_DIR") or "/run/user/1000"
+local sig = os.getenv("HYPRLAND_INSTANCE_SIGNATURE") or "none"
+local stamp = rt .. "/hypr/" .. sig .. "/btw-session-started"
 
--- Lua's bind parser drops ALT_R as a modifier (it is a keysym), so the live
--- Alt_R+Control_R waybar toggle cannot be registered with hl.bind. Inject the
--- exact hyprlang bind instead.
-hl.exec_cmd(
-	"hyprctl keyword bindd 'Alt_R, Control_R, [Window Management] toggle waybar and reload config, exec, hyde-shell waybar --hide'"
+local function session_autostart()
+	local seen = io.open(stamp, "r")
+	if seen then
+		seen:close()
+		return
+	end
+	local out = io.open(stamp, "w")
+	if out then
+		out:write("1\n")
+		out:close()
+	end
+	hyde_session_start()
+	for _, cmd in ipairs(user_exec_once) do
+		if cmd:find("hyprshaderd", 1, true) then
+			start_hyprshaderd(true)
+		else
+			start_user_once(cmd, false)
+		end
+	end
+end
+
+-- hyprland.start often does not fire for Lua configs loaded after the compositor
+-- is already up. Stamp so this runs once per instance; timer is the fallback.
+hl.on("hyprland.start", session_autostart)
+hl.timer(session_autostart, { timeout = 2000, type = "oneshot" })
+
+-- Reloads: keep daemons up, never re-run startup-layout.
+for _, cmd in ipairs(user_exec_once) do
+	start_user_once(cmd, true)
+end
+do
+	local hs = (hyde.config and hyde.config.start) or {}
+	if hs.idle_daemon then
+		check_exec("sh -c 'pgrep -x hypridle >/dev/null || " .. hs.idle_daemon .. "'")
+	end
+	if hs.notifications then
+		check_exec("sh -c 'pgrep -x dunst >/dev/null || " .. hs.notifications .. "'")
+	end
+	if hs.bar then
+		check_exec("sh -c 'pgrep -x waybar >/dev/null || " .. hs.bar .. "'")
+	end
+end
+
+-- Direct kitty binds: HyDE Super+T uses hyde-shell app -T.
+hl.bind("SUPER + T", hl.dsp.exec_cmd("kitty"), { description = "[Launcher|Apps] terminal emulator" })
+hl.bind("SUPER + RETURN", hl.dsp.exec_cmd("kitty"), { description = "[Launcher|Apps] terminal emulator" })
+
+-- Conf: Alt_R + Control_R = hyde-shell waybar --hide. Lua drops ALT_R and
+-- CONTROL_R as modifiers (they register as keys), so that combo cannot be
+-- expressed. Super+Shift+B is the Lua replacement.
+hl.bind(
+	"SUPER + SHIFT + B",
+	hl.dsp.exec_cmd("hyde-shell waybar --hide"),
+	{ description = "[Window Management] toggle waybar and reload config" }
 )
 
 -- HyDE sets a pink overlay when lua_state.colors is invisible to Hyprland's
