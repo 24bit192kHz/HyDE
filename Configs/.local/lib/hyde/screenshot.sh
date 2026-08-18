@@ -90,6 +90,19 @@ fi
 
 [[ -n ${SCREENSHOT_ANNOTATION_ARGS[*]} ]] && annotation_args+=("${SCREENSHOT_ANNOTATION_ARGS[@]}")
 
+grimblast_bin="${LIB_DIR}/hyde/screenshot/grimblast"
+if [[ ! -x $grimblast_bin ]]; then
+    grimblast_bin="${LIB_DIR}/hyde/grimblast"
+fi
+if [[ ! -x $grimblast_bin ]]; then
+    grimblast_bin="$(command -v grimblast || true)"
+fi
+if [[ ! -x $grimblast_bin ]]; then
+    print_log -r "grimblast not found (expected ${LIB_DIR}/hyde/screenshot/grimblast)"
+    send_notifs -a "HyDE Alert" "Screenshot Error" "grimblast is not installed"
+    exit 1
+fi
+
 run_annotation_tool() {
     if [[ $annotation_tool == "satty" ]]; then
         GSK_RENDERER="${GSK_RENDERER:-gl}" "$annotation_tool" "${annotation_args[@]}"
@@ -106,7 +119,7 @@ take_screenshot() {
 
     [[ ${SCREENSHOT_ANNOTATION_ENABLED} == false ]] && target_file="$save_dir/$save_file"
 
-    command=("$LIB_DIR/hyde/screenshot/grimblast" "${extra_args[@]}" "copysave" "${mode}" "${target_file}")
+    command=("$grimblast_bin" "${extra_args[@]}" "copysave" "${mode}" "${target_file}")
     print_log -g "Executing screenshot command: ${command[*]}"
     if eval "${command[*]}"; then
         [[ ${SCREENSHOT_ANNOTATION_ENABLED} == false ]] && return 0
@@ -123,7 +136,7 @@ ocr_screenshot() {
     local mode=$1
     shift
     local extra_args=("$@")
-    if "$LIB_DIR/hyde/screenshot/grimblast" "${extra_args[@]}" copysave "$mode" "$temp_screenshot"; then
+    if "$grimblast_bin" "${extra_args[@]}" copysave "$mode" "$temp_screenshot"; then
         source "${LIB_DIR}/hyde/shutils/ocr.sh"
         source ${XDG_STATE_HOME}/hyde/config
         print_log -g "Performing OCR on $temp_screenshot"
@@ -142,7 +155,7 @@ qr_screenshot() {
     local mode=$1
     shift
     local extra_args=("$@")
-    if "$LIB_DIR/hyde/screenshot/grimblast" "${extra_args[@]}" copysave "$mode" "$temp_screenshot"; then
+    if "$grimblast_bin" "${extra_args[@]}" copysave "$mode" "$temp_screenshot"; then
         source "${LIB_DIR}/hyde/shutils/qr.sh"
         print_log -g "Performing QR scan on $temp_screenshot"
         send_notifs "QR Scan" "Performing QR scan on screenshot..." -i "document-scan" -r 9

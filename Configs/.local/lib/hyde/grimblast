@@ -185,6 +185,10 @@ wait() {
     fi
 }
 if [ -z "$HYPRLAND_INSTANCE_SIGNATURE" ]; then
+    HYPRLAND_INSTANCE_SIGNATURE="$(basename "$(ls -td "${XDG_RUNTIME_DIR:-/run/user/1000}/hypr/"*/ 2>/dev/null | head -1)")"
+    export HYPRLAND_INSTANCE_SIGNATURE
+fi
+if [ -z "$HYPRLAND_INSTANCE_SIGNATURE" ]; then
     echo "Error: HYPRLAND_INSTANCE_SIGNATURE not set! (is hyprland running?)"
     exit 1
 fi
@@ -221,7 +225,8 @@ elif [ "$SUBJECT" = "area" ]; then
         hyprpicker -r -z &
         sleep 0.2
     fi
-    hyprctl keyword layerrule "noanim,selection" > /dev/null
+    hyprctl keyword layerrule "noanim,selection" >/dev/null 2>&1 || \
+        hyprctl eval 'hl.config({ layerrule = { "noanim,selection" } })' >/dev/null 2>&1 || true
     FULLSCREEN_WORKSPACES="$(hyprctl workspaces -j | jq -r 'map(select(.hasfullscreen) | .id)')"
     WORKSPACES="$(hyprctl monitors -j | jq -r '[(foreach .[] as $monitor (0; if $monitor.specialWorkspace.name == "" then $monitor.activeWorkspace else $monitor.specialWorkspace end)).id]')"
     WINDOWS="$(hyprctl clients -j | jq -r --argjson workspaces "$WORKSPACES" --argjson fullscreenWorkspaces "$FULLSCREEN_WORKSPACES" 'map((select(([.workspace.id] | inside($workspaces)) and ([.workspace.id] | inside($fullscreenWorkspaces) | not) or .fullscreen > 0)))')"

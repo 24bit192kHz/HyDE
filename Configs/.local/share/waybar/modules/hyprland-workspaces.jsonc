@@ -4,8 +4,9 @@
         "active-only": false,
         "disable-scroll": false,
         "tooltip": false,
-        "on-scroll-up": "hyprctl dispatch 'hl.dsp.focus({workspace=\"e-1\"})'",
-        "on-scroll-down": "hyprctl dispatch 'hl.dsp.focus({workspace=\"e+1\"})'",
+        "on-click": "hypr-workspace {name}",
+        "on-scroll-up": "hyprctl eval 'hl.dispatch(hl.dsp.focus({workspace=\"e-1\"}))'",
+        "on-scroll-down": "hyprctl eval 'hl.dispatch(hl.dsp.focus({workspace=\"e+1\"}))'",
         "persistent-workspaces": {}
     }
 }

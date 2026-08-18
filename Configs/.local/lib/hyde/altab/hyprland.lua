@@ -195,8 +195,8 @@ end
 
 function hypr.focus_addr(addr, DEBUG)
     if addr and addr ~= "" then
-        hyprctl_raw('dispatch hl.dsp.focus({ window = "address:' .. addr .. '" })', DEBUG)
-        hyprctl_raw('dispatch hl.dsp.window.alter_zorder({ mode = "top", window = "address:' .. addr .. '" })', DEBUG)
+        hyprctl_raw('eval hl.dispatch(hl.dsp.focus({ window = "address:' .. addr .. '" }))', DEBUG)
+        hyprctl_raw('eval hl.dispatch(hl.dsp.window.alter_zorder({ mode = "top", window = "address:' .. addr .. '" }))', DEBUG)
         return true
     end
     return false

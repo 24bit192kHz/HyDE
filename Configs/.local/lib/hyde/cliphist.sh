@@ -68,6 +68,7 @@ run_rofi() {
     local placeholder="$1"
     shift
     rofi -dmenu \
+        -m "${ROFI_POS_MONITOR:--4}" \
         -theme-str "entry { placeholder: \"$placeholder\";}" \
         -theme-str "$font_override" \
         -theme-str "$r_override" \
@@ -105,6 +106,7 @@ setup_rofi_config() {
     local wind_border=$((hypr_border * 3 / 2))
     local elem_border=$((hypr_border == 0 ? 5 : hypr_border))
     rofi_position=$(get_rofi_pos)
+    ROFI_POS_MONITOR=$(sed -n 's/.*monitor:"\([^"]*\)".*/\1/p' <<<"$rofi_position")
     local hypr_width=${hypr_width:-"$(hyprctl -j getoption general:border_size | jq '.int')"}
     r_override="window{border:${hypr_width}px;border-radius:${wind_border}px;}wallbox{border-radius:${elem_border}px;} element{border-radius:${elem_border}px;}"
 }

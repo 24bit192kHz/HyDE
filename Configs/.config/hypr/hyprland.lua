@@ -35,6 +35,14 @@ local function check_exec(cmd)
 	end
 end
 
+local function stop_hyde_wallpaper()
+	-- HyDE start_up.lua fires wallpaper before this file replaces hl.on.
+	-- awww then covers earth-native. Kill it the same way we kill hyprsunset.
+	check_exec(
+		"sh -c 'systemctl --user stop hyde-Hyprland-wallpaper.service 2>/dev/null; pkill -x awww-daemon || true; pkill -x awww || true'"
+	)
+end
+
 local function hyde_session_start()
 	local hs = (hyde.config and hyde.config.start) or {}
 	check_exec(hs.dbus_share_picker)
@@ -44,7 +52,9 @@ local function hyde_session_start()
 	-- xdph dies with "Couldn't connect to a wayland compositor".
 	check_exec("hyde-shell resetxdgportal.sh")
 	check_exec("uwsm finalize")
-	-- Skip hs.wallpaper: earth-native owns background layers. awww/hyprpaper must not start.
+	-- Skip hs.wallpaper: earth-native is the wallpaper. Also kill the HyDE
+	-- start_up.lua race that still launches awww before this handler replaces it.
+	stop_hyde_wallpaper()
 	check_exec(hs.bar)
 	-- Skip hyprsunset: it owns hyprland-ctm-control-v1 exclusively, so
 	-- hyprshaderd cannot dim. Night-light stays off on this machine.
@@ -133,6 +143,7 @@ hl.on("hyprland.start", session_autostart)
 hl.timer(session_autostart, { timeout = 2000, type = "oneshot" })
 
 -- Reloads: keep daemons up, never re-run startup-layout.
+stop_hyde_wallpaper()
 for _, cmd in ipairs(user_exec_once) do
 	start_user_once(cmd, true)
 end

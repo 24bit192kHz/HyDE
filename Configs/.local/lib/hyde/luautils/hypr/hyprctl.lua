@@ -183,11 +183,21 @@ M.status = wrap_json("status", "j/status")
 M.config_errors = wrap_json("config_errors", "j/configerrors")
 M.instances = wrap_json("instances", "j/instances")
 M.system_info = wrap_json("system_info", "j/systeminfo")
+M.eval = function(code)
+    return hyprctl_raw("eval " .. tostring(code))
+end
+
 M.dispatch = function(dispatcher, ...)
     if not dispatcher or dispatcher == "" then
         return nil, "dispatcher name required"
     end
-    return hyprctl("dispatch", dispatcher, ...)
+    dispatcher = tostring(dispatcher)
+    -- Lua Hyprland rejects the hyprctl "dispatch" IPC verb. Callers already
+    -- pass hl.dsp.* expressions (window.pin.lua).
+    if dispatcher:find("hl%.", 1, true) and not dispatcher:find("hl.dispatch", 1, true) then
+        dispatcher = "hl.dispatch(" .. dispatcher .. ")"
+    end
+    return hyprctl_raw("eval " .. dispatcher)
 end
 
 return M

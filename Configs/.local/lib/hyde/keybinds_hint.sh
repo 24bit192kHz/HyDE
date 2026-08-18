@@ -61,7 +61,11 @@ dispatch=$(read_field 2)
 arg=$(read_field 3)
 repeat=$(read_field 4)
 RUN() {
-    case "$(hyprctl dispatch "$dispatch" "$arg")" in *"Not enough arguments"*) exec "$0" ;; esac
+    if [[ $dispatch == exec ]]; then
+        hyprctl eval "hl.exec_cmd([==[${arg}]==])" >/dev/null
+        return
+    fi
+    case "$(hyprctl eval "hl.dispatch(hl.dsp.${dispatch}())" 2>&1)" in *"Not enough arguments"*|*"error:"*) exec "$0" ;; esac
 }
 if [ -n "$dispatch" ] && [ "$(echo "$dispatch" | wc -l)" -eq 1 ]; then
     if [ "$repeat" = repeat ]; then

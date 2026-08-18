@@ -80,7 +80,9 @@ handle_recording() {
     fi
     tmp_thumbnail=$(mktemp -t thumbnail_XXXXXX.png)
     if [[ -z $GEOM ]]; then
-        "$LIB_DIR/hyde/screenshot/grimblast" save active "$tmp_thumbnail"
+        grimblast_bin="${LIB_DIR}/hyde/screenshot/grimblast"
+        [[ -x $grimblast_bin ]] || grimblast_bin="${LIB_DIR}/hyde/grimblast"
+        "$grimblast_bin" save active "$tmp_thumbnail"
     else
         grim -g "$GEOM" "$tmp_thumbnail"
     fi

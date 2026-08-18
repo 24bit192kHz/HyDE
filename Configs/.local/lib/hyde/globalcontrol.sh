@@ -389,32 +389,62 @@ get_monitor_scale() {
 }
 get_rofi_pos() {
     [[ -n $HYPRLAND_INSTANCE_SIGNATURE ]] || return 1
-    readarray -t curPos < <(hyprctl cursorpos -j | jq -r '.x,.y')
-    eval "$(hyprctl -j monitors | jq -r '.[] | select(.focused==true) |
-        "monRes=(\(.width) \(.height) \(.scale) \(.x) \(.y)) offRes=(\(.reserved | join(" ")))"')"
-    monRes[2]="$(get_monitor_scale "${monRes[2]}")"
-    monRes[0]=$((monRes[0] * 100 / monRes[2]))
-    monRes[1]=$((monRes[1] * 100 / monRes[2]))
-    curPos[0]=$((curPos[0] - monRes[3]))
-    curPos[1]=$((curPos[1] - monRes[4]))
-    offRes=("${offRes// / }")
-    if [ "${curPos[0]}" -ge "$((monRes[0] / 2))" ]; then
-        local x_pos="east"
-        local x_off="-$((monRes[0] - curPos[0] - offRes[2]))"
+    local cx cy mon mw mh mx my scale lft top rgt bot rel_x rel_y
+    local x_pos y_pos x_off y_off
+    cx=$(hyprctl cursorpos -j | jq -r '.x')
+    cy=$(hyprctl cursorpos -j | jq -r '.y')
+    # Logical size: odd transform (90/270) swaps width/height. Hyprland still
+    # reports the pre-rotate mode size, so portrait DP-1 is 2560x1080 transform 1
+    # while the layout slot is 1080x2560. Using the mode size makes cursor Y
+    # overshoot the "monitor" and bash `-$((negative))` emits `--Npx` offsets
+    # that throw rofi into the dead zone above the ultrawide.
+    mon=$(hyprctl -j monitors | jq -c --argjson x "$cx" --argjson y "$cy" '
+        def logical:
+            (if ((.transform // 0) | tonumber) % 2 == 1
+             then {w: .height, h: .width}
+             else {w: .width,  h: .height}
+             end) + {x: .x, y: .y, scale: .scale, reserved: .reserved, name: .name};
+        def hit($m):
+            ($x >= $m.x) and ($x < $m.x + $m.w) and ($y >= $m.y) and ($y < $m.y + $m.h);
+        ([.[] | logical] | map(select(hit(.))) | .[0])
+        // ([.[] | select(.focused == true) | logical] | .[0])
+    ')
+    [[ -n $mon && $mon != null ]] || return 1
+    mw=$(jq -r '.w' <<<"$mon")
+    mh=$(jq -r '.h' <<<"$mon")
+    mx=$(jq -r '.x' <<<"$mon")
+    my=$(jq -r '.y' <<<"$mon")
+    scale=$(get_monitor_scale "$(jq -r '.scale' <<<"$mon")")
+    ROFI_POS_MONITOR=$(jq -r '.name' <<<"$mon")
+    export ROFI_POS_MONITOR
+    lft=$(jq -r '.reserved[0] // 0' <<<"$mon")
+    top=$(jq -r '.reserved[1] // 0' <<<"$mon")
+    rgt=$(jq -r '.reserved[2] // 0' <<<"$mon")
+    bot=$(jq -r '.reserved[3] // 0' <<<"$mon")
+    mw=$((mw * 100 / scale))
+    mh=$((mh * 100 / scale))
+    rel_x=$((cx - mx))
+    rel_y=$((cy - my))
+    ((rel_x < 0)) && rel_x=0
+    ((rel_y < 0)) && rel_y=0
+    ((rel_x > mw)) && rel_x=$mw
+    ((rel_y > mh)) && rel_y=$mh
+    if ((rel_x >= mw / 2)); then
+        x_pos="east"
+        x_off=$((rel_x - mw + rgt))
     else
-        local x_pos="west"
-        local x_off="$((curPos[0] - offRes[0]))"
+        x_pos="west"
+        x_off=$((rel_x - lft))
     fi
-    if [ "${curPos[1]}" -ge "$((monRes[1] / 2))" ]; then
-        local y_pos="south"
-        local y_off="-$((monRes[1] - curPos[1] - offRes[3]))"
+    if ((rel_y >= mh / 2)); then
+        y_pos="south"
+        y_off=$((rel_y - mh + bot))
     else
-        local y_pos="north"
-        local y_off="$((curPos[1] - offRes[1]))"
+        y_pos="north"
+        y_off=$((rel_y - top))
     fi
-    local coordinates="window{location:$x_pos $y_pos;anchor:$x_pos $y_pos;x-offset:${x_off}px;y-offset:${y_off}px;}"
-    echo "$coordinates"
-
+    printf 'configuration{monitor:"%s";}window{location:%s %s;anchor:%s %s;x-offset:%dpx;y-offset:%dpx;}\n' \
+        "$ROFI_POS_MONITOR" "$x_pos" "$y_pos" "$x_pos" "$y_pos" "$x_off" "$y_off"
 }
 paste_string() {
     if ! command -v wtype >/dev/null; then exit 0; fi
@@ -434,7 +464,7 @@ EOF
     [ -n "$ignore_class" ] && echo "$ignore_class" >>"$ignore_paste_file" && print_log -y "[ignore]" "'$ignore_class'" && exit 0
     class=$(hyprctl -j activewindow | jq -r '.initialClass')
     if ! grep -q "$class" "$ignore_paste_file"; then
-        hyprctl -q dispatch exec 'wtype -M ctrl V -m ctrl'
+        hyprctl eval 'hl.exec_cmd("wtype -M ctrl V -m ctrl")' >/dev/null
     fi
 }
 is_hovered() {

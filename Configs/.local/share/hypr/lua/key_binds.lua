@@ -56,7 +56,10 @@ hl.bind(MOD .. " + Up", hl.dsp.focus({ direction = "up" }), _F)
 _F = { description = "[Window Management|Change focus] focus down" }
 hl.bind(MOD .. " + Down", hl.dsp.focus({ direction = "down" }), _F)
 _F = { description = "[Window Management|Change focus] Cycle focus" }
-hl.bind("ALT + TAB", hl.dsp.exec_cmd('hyprctl --batch "dispatch cyclenext ; dispatch alterzorder top"'), _F)
+hl.bind("ALT + TAB", function()
+	hl.dispatch(hl.dsp.window.cycle_next())
+	hl.dispatch(hl.dsp.window.bring_to_top())
+end, _F)
 
 _F = { description = "[Window Management|Resize Active Window] resize window right", repeating = true }
 hl.bind(MOD .. " + SHIFT + RIGHT", hl.dsp.window.resize({ x = 30, y = 0, relative = true }), _F)

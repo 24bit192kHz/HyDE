@@ -3,10 +3,10 @@
 # Updated config.toml file can be found at $HOME/.local/share/hyde/config.toml
 "$schema" = "https://raw.githubusercontent.com/HyDE-Project/HyDE/refs/heads/master/Configs/.local/share/hyde/schema/config.toml.json"
 
-# earth-native (zwlr_layer_shell background) is the wallpaper on this machine.
-# Do not start HyDE wallpaper.sh / awww / hyprpaper — they cover Earth.
-[wallpaper]
-backend = "none"
+# earth-native owns the wallpaper. Empty string keeps HyDE start_up.lua from
+# launching wallpaper.sh/awww before hyprland.lua can skip it.
+[hyprland-start]
+wallpaper = ""
 
 [desktop.start]
 wallpaper = ""
