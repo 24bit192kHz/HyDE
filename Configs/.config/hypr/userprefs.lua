@@ -9,17 +9,11 @@ local exec_once = {
 	"/home/btw/mhm/hyprshaderd/hyprshaderd",
 	-- Native Vulkan/Wayland Earth wallpaper. Unreal stays for explicit captures.
 	"/home/btw/.local/bin/earth-native start",
+	"/home/btw/.local/bin/hypr-seat-watch",
 	"systemctl --user start pcpanel.service",
 }
 
--- earth-native owns the background layers. Empty this so HyDE's start_up.lua
--- cannot launch wallpaper.sh → awww/hyprpaper over Earth.
-if hyde and hyde.config and hyde.config.start then
-	hyde.config.start.wallpaper = ""
-end
-
--- wallpaper.sh defaults to awww when this is unset. "none" has no handler.
-hl.env("WALLPAPER_BACKEND", "none")
+hl.env("WALLPAPER_BACKEND", "hyprpaper")
 hl.env("GTK_USE_PORTAL", "1")
 hl.env("GDK_DEBUG", "portals")
 hl.env("HYPRLIGHTD_BRIGHTNESS_NORMAL", "0.55")
@@ -38,7 +32,7 @@ hl.config({
 		},
 	},
 	render = {
-		cm_auto_hdr = 1,
+		cm_auto_hdr = 0,
 		cm_enabled = true,
 	},
 	debug = {
@@ -70,16 +64,9 @@ hl.config({
 	},
 	misc = {
 		allow_session_lock_restore = true,
-		disable_hyprland_logo = true,
-		force_default_wallpaper = 0,
-		background_color = 0,
 	},
 })
 
--- HyDE Super+Shift+W launches wallpaper select (awww). Dedup-replace it.
-hl.bind("SUPER + SHIFT + W", function() end, {
-	description = "disabled: earth-native is the wallpaper",
-})
 hl.bind("SUPER + ALT + N", hl.dsp.exec_cmd("/home/btw/.local/bin/earth-native control"), {
 	description = "Control native Earth renderer",
 })
