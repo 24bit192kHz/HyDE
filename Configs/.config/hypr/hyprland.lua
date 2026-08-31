@@ -22,10 +22,30 @@ local cfg = os.getenv("XDG_CONFIG_HOME") or ((os.getenv("HOME") or "") .. "/.con
 local hypr = cfg .. "/hypr"
 local load_hyprlang = dofile(hypr .. "/load_hyprlang.lua")
 
-load_hyprlang.apply_monitors(hypr .. "/monitors.conf")
--- nwg-displays writes SDR-only monitors.conf (HDR line is commented).
--- monitors.lua is the live HDR layout; it must run after so cm=hdr sticks.
+-- Wiki lua monitor rules (0.55+). nwg-displays still writes monitors.conf
+-- and monitors.lua; keep this file in sync with that layout.
 dofile(hypr .. "/monitors.lua")
+-- nwg-displays Apply can emit bitdepth=10. Dual 10-bit / XB30 on this NVIDIA
+-- card blanks one or both heads, so re-pin 8-bit sRGB after that load.
+hl.monitor({
+	output = "DP-1",
+	mode = "2560x1080@99.94",
+	position = "0x0",
+	scale = 1,
+	transform = 1,
+	bitdepth = 8,
+	cm = "srgb",
+	disabled = false,
+})
+hl.monitor({
+	output = "DP-2",
+	mode = "3440x1440@240.09",
+	position = "1080x757",
+	scale = 1,
+	bitdepth = 8,
+	cm = "srgb",
+	disabled = false,
+})
 local userprefs = dofile(hypr .. "/userprefs.lua")
 dofile(hypr .. "/user_windowrules.lua")
 local user_exec_once = (userprefs and userprefs.exec_once) or {}
