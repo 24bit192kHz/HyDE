@@ -1,3 +1,8 @@
+#  User PATH 
+typeset -U path PATH
+path=("$HOME/mhm/scripts" $path)
+export PATH
+
 #  Startup 
 # Commands to execute on startup (before the prompt is shown)
 # Check if the interactive shell option is set
@@ -9,7 +14,7 @@ if [[ $- == *i* ]]; then
         pokemon-colorscripts --no-title -r 1,3,6
     elif command -v fastfetch >/dev/null; then
         if do_render "image"; then
-            fastfetch --logo-type kitty
+            fastfetch
         fi
     fi
 fi
@@ -27,3 +32,21 @@ if [[ ${HYDE_ZSH_NO_PLUGINS} != "1" ]]; then
         "sudo"
     )
 fi
+
+alias c='clear && printf "\e[3J"'
+
+#  Auto-update omp on launch 
+omp() {
+    if [[ -n "$OMPCODE" || -n "$AGENT" || -n "$OMP_NO_AUTO_UPDATE" ]]; then
+        command omp "$@"
+        return $?
+    fi
+    case "$1" in
+        update|config|completions|plugin|agents|bench|cleanse|auth-broker|auth-gateway|browser-relay|commit|compress|dry-balance|gallery|gc|git|grep|grievances|if-bench|images|install|join|models|ps|read|render|say|search|setup|share|shell|ssh|stats|tiny-models|token|ttsr|usage|worktree|-h|--help|-v|--version|-p|--print)
+            command omp "$@"
+            return $?
+            ;;
+    esac
+    command omp update || true
+    command omp "$@"
+}
