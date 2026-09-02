@@ -15,12 +15,11 @@ if not hyde then
 end
 
 -- Machine overrides for btw (CachyOS + Hyprland + RTX 3080 Ti).
--- monitors.conf is still hyprlang from nwg-displays. Personal overrides live
--- in userprefs.lua (ported from userprefs.conf).
+-- Personal overrides live in userprefs.lua; window rules in
+-- user_windowrules.lua. (Legacy hyprlang *.conf moved to ./legacy/.)
 
 local cfg = os.getenv("XDG_CONFIG_HOME") or ((os.getenv("HOME") or "") .. "/.config")
 local hypr = cfg .. "/hypr"
-local load_hyprlang = dofile(hypr .. "/load_hyprlang.lua")
 
 -- Wiki lua monitor rules (0.55+). nwg-displays still writes monitors.conf
 -- and monitors.lua; keep this file in sync with that layout.
