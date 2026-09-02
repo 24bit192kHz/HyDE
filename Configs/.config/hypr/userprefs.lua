@@ -65,9 +65,10 @@ hl.config({
 	},
 	misc = {
 		allow_session_lock_restore = true,
-		-- DP-2 (LG SMARTGAME+ 240Hz) crtc is vrr_capable (hyprland.log);
-		-- DP-1 is incapable and unaffected. Revert on NVIDIA flicker.
-		vrr = 1,
+		-- VRR tested 2026-09-02 on DP-2 (vrr_capable, driver 610.57.04,
+		-- Hyprland 0.56.2): visible flicker/shimmer. Keep it off; do not
+		-- re-test without changing driver or panel firmware.
+		vrr = 0,
 	},
 })
 
