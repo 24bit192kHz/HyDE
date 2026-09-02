@@ -44,7 +44,6 @@ end
 
 opacity_class("^(firefox)$", 0.90, 0.90, 1)
 opacity_class("^(zen)$", 0.90, 0.90, 1)
-opacity_class("^(brave-browser|brave-origin)$", 0.90, 0.90, 1)
 opacity_class("^(code-oss)$", 0.80, 0.80, 1)
 opacity_class("^([Cc]ode)$", 0.80, 0.80, 1)
 opacity_class("^(code-url-handler)$", 0.80, 0.80, 1)
