@@ -7,18 +7,13 @@ end
 
 rule({
 	name = "idle_inhibit_video",
-	match = { class = "^(.*celluloid.*)$|^(.*mpv.*)$|^(.*vlc.*)$" },
-	idle_inhibit = "fullscreen",
-})
-rule({
-	name = "idle_inhibit_spotify",
-	match = { class = "^(.*[Ss]potify.*)$" },
+	match = { class = "^(.*mpv.*)$" },
 	idle_inhibit = "fullscreen",
 })
 rule({
 	name = "idle_inhibit_browsers",
 	match = {
-		class = "^(.*LibreWolf.*)$|^(.*floorp.*)$|^(.*brave-browser.*)$|^(.*firefox.*)$|^(.*chromium.*)$|^(.*zen.*)$|^(.*vivaldi.*)$",
+		class = "^(.*LibreWolf.*)$|^(.*floorp.*)$|^(.*brave.*)$|^(.*firefox.*)$|^(.*chromium.*)$|^(.*zen.*)$|^(.*vivaldi.*)$",
 	},
 	idle_inhibit = "fullscreen",
 })
@@ -49,7 +44,7 @@ end
 
 opacity_class("^(firefox)$", 0.90, 0.90, 1)
 opacity_class("^(zen)$", 0.90, 0.90, 1)
-opacity_class("^(brave-browser)$", 0.90, 0.90, 1)
+opacity_class("^(brave-browser|brave-origin)$", 0.90, 0.90, 1)
 opacity_class("^(code-oss)$", 0.80, 0.80, 1)
 opacity_class("^([Cc]ode)$", 0.80, 0.80, 1)
 opacity_class("^(code-url-handler)$", 0.80, 0.80, 1)
@@ -70,24 +65,14 @@ opacity_class("^(org.freedesktop.impl.portal.desktop.gtk)$", 0.80, 0.70, 1)
 opacity_class("^(org.freedesktop.impl.portal.desktop.hyprland)$", 0.80, 0.70, 1)
 opacity_class("^([Ss]team)$", 0.70, 0.70, 1)
 opacity_class("^(steamwebhelper)$", 0.70, 0.70, 1)
-opacity_class("^([Ss]potify)$", 0.70, 0.70, 1)
 opacity_class("^(blender)$", 1.00, 1.00, 1)
-
-rule({
-	match = { initial_title = "^(Spotify Free)$" },
-	opacity = "0.70 0.70 1",
-})
-rule({
-	match = { initial_title = "^(Spotify Premium)$" },
-	opacity = "0.70 0.70 1",
-})
 
 for _, class in ipairs({
 	"^(com.github.rafostar.Clapper)$",
 	"^(com.github.tchx84.Flatseal)$",
 	"^(hu.kramo.Cartridges)$",
 	"^(com.obsproject.Studio)$",
-	"^(gnome-boxes)$",
+	"^(org.gnome.Boxes)$",
 	"^(vesktop)$",
 	"^(discord)$",
 	"^(WebCord)$",
@@ -112,7 +97,7 @@ for _, class in ipairs({
 	"^(app.drey.Warp)$",
 	"^(net.davidotek.pupgui2)$",
 	"^(yad)$",
-	"^(eog)$",
+	"^(org.gnome.eog)$",
 	"^(io.github.alainm23.planify)$",
 	"^(io.gitlab.theevilskeleton.Upscaler)$",
 	"^(com.github.unrud.VideoDownloader)$",
@@ -132,11 +117,6 @@ rule({
 rule({
 	match = { initial_title = "^(Ghidra: NO ACTIVE PROJECT)" },
 	float = true,
-})
-rule({
-	name = "jetbrains_popup_focus",
-	match = { class = "^(.*jetbrains.*)$", title = "^(win[0-9]+)$" },
-	no_initial_focus = true,
 })
 
 -- Restore compositor blur for bars/toasts. HyDE Lua used ignore_alpha=true

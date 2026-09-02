@@ -54,16 +54,6 @@ local floating =
   }
 )
 
-local pinned =
-  util.regex_compile(
-  {
-    title = {
-      "[Pp]icture[-\\s]?[Ii]n[-\\s]?[Pp]icture(.*)"
-    }
-  },
-  true
-)
-
 local modals =
   util.regex_compile(
   {
@@ -105,21 +95,6 @@ hl.window_rule(
       title = floating.title
     },
     float = true
-  }
-)
-
--- Pinned windows
-hl.window_rule(
-  {
-    name = "hyde_pin",
-    tag = "+hyde_pin",
-    match = {
-      title = pinned.title
-    },
-    float = true,
-    move = "(monitor_w*0.73) (monitor_h*0.72)",
-    size = "(monitor_w*0.25) (monitor_h*0.25)",
-    pin = true
   }
 )
 
