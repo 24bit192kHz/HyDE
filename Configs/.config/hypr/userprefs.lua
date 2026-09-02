@@ -9,7 +9,8 @@ local exec_once = {
 	"/home/btw/mhm/hyprshaderd/hyprshaderd",
 	-- Native Vulkan/Wayland Earth wallpaper. Unreal stays for explicit captures.
 	"/home/btw/.local/bin/earth-native start",
-	"/home/btw/.local/bin/hypr-seat-watch",
+	-- hypr-seat-watch moved to hypr-seat-watch.service (systemd user unit,
+	-- Restart=on-failure) so the dual-head hotplug restore self-heals.
 	"systemctl --user start pcpanel.service",
 }
 
@@ -64,6 +65,9 @@ hl.config({
 	},
 	misc = {
 		allow_session_lock_restore = true,
+		-- DP-2 (LG SMARTGAME+ 240Hz) crtc is vrr_capable (hyprland.log);
+		-- DP-1 is incapable and unaffected. Revert on NVIDIA flicker.
+		vrr = 1,
 	},
 })
 
