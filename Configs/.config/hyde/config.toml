@@ -3,9 +3,9 @@
 # Updated config.toml file can be found at $HOME/.local/share/hyde/config.toml
 "$schema" = "https://raw.githubusercontent.com/HyDE-Project/HyDE/refs/heads/master/Configs/.local/share/hyde/schema/config.toml.json"
 
-# earth-native owns the wallpaper. Empty string keeps HyDE start_up.lua from
-# launching wallpaper.sh/awww before hyprland.lua can skip it.
-[hyprland-start]
+# Lua load_toml only merges [hyprland] and [desktop]. Hyphenated
+# [hyprland-start] is ignored. Wallpaper is also cleared in start_up.lua.
+[hyprland.start]
 wallpaper = ""
 
 [desktop.start]
