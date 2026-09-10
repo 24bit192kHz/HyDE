@@ -52,12 +52,12 @@
     "group/pill#right1": {
         "orientation": "inherit",
         "modules": [
+            "hyprland/language",
             "backlight",
             "network",
             "pulseaudio",
             "pulseaudio#microphone",
             "custom/updates",
-            "hyprland/language",
             "custom/keybindhint"
         ]
     },

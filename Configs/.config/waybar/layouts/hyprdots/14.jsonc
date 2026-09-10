@@ -21,15 +21,20 @@
     "group/pill#left1": {
         "orientation": "inherit",
         "modules": [
-            "hyprland/workspaces",
-            "hyprland/window"
+            "custom/power",
+            "custom/hyde-menu",
+            "custom/cliphist",
+            "custom/wbar",
+            "custom/theme",
+            "custom/wallchange"
         ]
     },
     "group/pill#left2": {
         "orientation": "inherit",
         "modules": [
             "idle_inhibitor",
-            "clock"
+            "clock",
+            "custom/spotify"
         ]
     },
     "modules-center": [
@@ -38,46 +43,27 @@
     "group/pill#center": {
         "orientation": "inherit",
         "modules": [
-            "cpu",
-            "memory",
-            "custom/cpuinfo",
-            "custom/gpuinfo"
+            "wlr/taskbar"
         ]
     },
     "modules-right": [
         "group/pill#right1",
-        "group/pill#right2",
-        "group/pill#right3"
+        "group/pill#right2"
     ],
     "group/pill#right1": {
         "orientation": "inherit",
         "modules": [
-            "backlight",
-            "network",
-            "pulseaudio",
-            "pulseaudio#microphone",
-            "custom/updates",
-            "hyprland/language",
-            "custom/keybindhint"
+            "privacy",
+            "tray"
         ]
     },
     "group/pill#right2": {
         "orientation": "inherit",
         "modules": [
-            "privacy",
-            "tray",
-            "battery"
-        ]
-    },
-    "group/pill#right3": {
-        "orientation": "inherit",
-        "modules": [
-            "custom/wallchange",
-            "custom/theme",
-            "custom/wbar",
-            "custom/cliphist",
-            "custom/hyde-menu",
-            "custom/power"
+            "backlight",
+            "network",
+            "pulseaudio",
+            "pulseaudio#microphone"
         ]
     }
 }

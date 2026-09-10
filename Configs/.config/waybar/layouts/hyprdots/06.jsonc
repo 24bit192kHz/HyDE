@@ -58,7 +58,8 @@
             "pulseaudio#microphone",
             "custom/updates",
             "hyprland/language",
-            "custom/keybindhint"
+            "custom/keybindhint",
+            "custom/weather"
         ]
     },
     "group/pill#right2": {
