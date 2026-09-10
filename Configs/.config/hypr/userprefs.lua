@@ -33,7 +33,7 @@ hl.config({
 		},
 	},
 	render = {
-		cm_auto_hdr = 0,
+		cm_auto_hdr = 1,
 		cm_enabled = true,
 	},
 	debug = {

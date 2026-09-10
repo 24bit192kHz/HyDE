@@ -86,14 +86,6 @@ local function hyde_session_start()
 	check_exec(hs.hyde_config)
 end
 
-local function stop_hyprsunset()
-	-- systemd Restart=always will bring this back after a compositor restart
-	-- unless we stop the unit. It exclusive-owns CTM and kills hyprshaderd's dim.
-	check_exec(
-		"sh -c 'systemctl --user stop hyde-Hyprland-blue-light-filter.service 2>/dev/null; pkill -x hyprsunset || true'"
-	)
-end
-
 local function start_hyprshaderd(force)
 	local kill_old = ""
 	if force then
