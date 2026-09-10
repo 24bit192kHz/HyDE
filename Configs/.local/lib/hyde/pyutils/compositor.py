@@ -101,44 +101,50 @@ class HyprctlWrapper:
         cursor_pos = json.loads(HyprctlWrapper._send("j/cursorpos"))
         monitors = json.loads(HyprctlWrapper._send("j/monitors"))
 
-        focused_monitor = next((monitor for monitor in monitors if monitor["focused"]), None)
-        if not focused_monitor:
-            raise RuntimeError("No focused monitor found.")
+        def logical(mon):
+            w, h = mon["width"], mon["height"]
+            if int(mon.get("transform") or 0) % 2:
+                w, h = h, w
+            return w, h, mon["x"], mon["y"], mon.get("reserved") or [0, 0, 0, 0], mon["name"]
 
-        mon_res = [
-            focused_monitor["width"],
-            focused_monitor["height"],
-            int(focused_monitor["scale"] * 100),
-            focused_monitor["x"],
-            focused_monitor["y"],
-        ]
-        off_res = focused_monitor["reserved"]
+        cx, cy = cursor_pos["x"], cursor_pos["y"]
+        chosen = None
+        for monitor in monitors:
+            w, h, mx, my, reserved, name = logical(monitor)
+            if mx <= cx < mx + w and my <= cy < my + h:
+                chosen = (w, h, mx, my, reserved, name, monitor["scale"])
+                break
+        if chosen is None:
+            focused = next((m for m in monitors if m.get("focused")), None)
+            if not focused:
+                raise RuntimeError("No focused monitor found.")
+            w, h, mx, my, reserved, name = logical(focused)
+            chosen = (w, h, mx, my, reserved, name, focused["scale"])
 
-        mon_res[0] = mon_res[0] * 100 // mon_res[2]
-        mon_res[1] = mon_res[1] * 100 // mon_res[2]
-        cur_pos = [cursor_pos["x"] - mon_res[3], cursor_pos["y"] - mon_res[4]]
+        w, h, mx, my, off_res, name, scale = chosen
+        scale_pct = int(float(scale) * 100 + 0.5) or 100
+        w = w * 100 // scale_pct
+        h = h * 100 // scale_pct
+        rel_x = min(max(cx - mx, 0), w)
+        rel_y = min(max(cy - my, 0), h)
+        lft, top, rgt, bot = (off_res + [0, 0, 0, 0])[:4]
 
-        if cur_pos[0] >= mon_res[0] // 2:
-            x_pos = "east"
-            x_off = -(mon_res[0] - cur_pos[0] - off_res[2])
+        if rel_x >= w // 2:
+            x_pos, x_off = "east", rel_x - w + rgt
         else:
-            x_pos = "west"
-            x_off = cur_pos[0] - off_res[0]
-
-        if cur_pos[1] >= mon_res[1] // 2:
-            y_pos = "south"
-            y_off = -(mon_res[1] - cur_pos[1] - off_res[3])
+            x_pos, x_off = "west", rel_x - lft
+        if rel_y >= h // 2:
+            y_pos, y_off = "south", rel_y - h + bot
         else:
-            y_pos = "north"
-            y_off = cur_pos[1] - off_res[1]
+            y_pos, y_off = "north", rel_y - top
 
-        coordinates = (
+        return (
+            f'configuration{{monitor:"{name}";}}'
             f"window{{location:{x_pos} {y_pos};"
             f"anchor:{x_pos} {y_pos};"
-            f"x-offset:{x_off}px;"
-            f"y-offset:{y_off}px;}}"
+            f"x-offset:{int(x_off)}px;"
+            f"y-offset:{int(y_off)}px;}}"
         )
-        return coordinates
 
     @staticmethod
     def is_hovered() -> bool:

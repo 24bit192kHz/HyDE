@@ -12,6 +12,8 @@
 # And ensures that we have an obstruction-free .zshrc file
 # This also ensures that the proper HyDE $ENVs are loaded
 
+setopt INTERACTIVE_COMMENTS
+
 function _load_functions() {
     # Load all custom function files // Directories are ignored
     for file in "${ZDOTDIR:-$HOME/.config/zsh}/functions/"*.zsh; do
@@ -226,11 +228,11 @@ else
     _load_completions
 fi
 
-__package_manager () { 
+__package_manager () {
     ${PM_COMMAND[@]} "$@"
 }
 
-alias c='clear' \
+alias c='clear && printf "\e[3J"' \
     in='__package_manager install' \
     un='__package_manager remove' \
     up='__package_manager upgrade' \
@@ -245,4 +247,4 @@ alias c='clear' \
     .5='cd ../../../../..' \
     mkdir='mkdir -p'
 
-
+export PATH="/home/btw/.cache/.bun/bin:$PATH"

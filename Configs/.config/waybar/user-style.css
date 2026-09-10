@@ -1,1 +1,6 @@
 /* User custom styles */
+#language {
+    color: @main-fg;
+    padding: 0 8px;
+    font-size: 12px;
+}

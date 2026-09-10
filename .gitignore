@@ -9,3 +9,11 @@ Scripts/pkg_user.lst
 .zsh_history*
 .zcompdump*
 Configs/.config/uwsm/*
+./.*
+build
+
+# Local agent worktrees, never part of the tree
+.claude/
+
+# exception: this machine needs its hypr-seat-watch user unit versioned
+!Configs/.config/systemd/user/

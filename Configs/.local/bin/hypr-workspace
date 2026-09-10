@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Switch Hyprland workspace from Waybar. Lua parser rejects `hyprctl dispatch`.
+set -euo pipefail
+ws="${1:?workspace name or id required}"
+if [[ -z ${HYPRLAND_INSTANCE_SIGNATURE:-} ]]; then
+	HYPRLAND_INSTANCE_SIGNATURE="$(basename "$(ls -td "${XDG_RUNTIME_DIR:-/run/user/1000}/hypr/"*/ 2>/dev/null | head -1)")"
+	export HYPRLAND_INSTANCE_SIGNATURE
+fi
+exec hyprctl eval "hl.dispatch(hl.dsp.focus({ workspace = [==[${ws}]==] }))"

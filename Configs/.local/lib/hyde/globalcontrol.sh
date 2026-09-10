@@ -23,6 +23,31 @@ export themesDir="$THEMES_DIR"
 export fontsDir="$FONTS_DIR"
 export hashMech="sha1sum"
 
+export HYDE_STATUS_CACHE_FAILED=3
+export HYDE_STATUS_COLOURS_FAILED=4
+
+##
+# Creates the directories HyDE writes its own generated state into. A template
+# whose target directory is absent is skipped as an optional dependency, so a
+# first run on a clean machine would otherwise leave the colour state unwritten.
+#
+# Globals:
+#   HYDE_STATE_HOME, HYDE_CACHE_HOME, HYDE_RUNTIME_DIR, XDG_CONFIG_HOME
+##
+hyde_state_dirs() {
+    local dir
+    for dir in "$HYDE_STATE_HOME/lua_state" "$HYDE_CACHE_HOME/wallbash" "$HYDE_RUNTIME_DIR" \
+        "${XDG_CONFIG_HOME:-$HOME/.config}/hypr/themes"; do
+        [ -d "$dir" ] && continue
+        if ! mkdir -p "$dir"; then
+            printf '[hyde] could not create %s\n' "$dir" >&2
+            return 1
+        fi
+    done
+}
+hyde_state_dirs
+hyde_state_dirs_status=$?
+
 send_notifs() {
     local args=("$@")
     notify-send "${args[@]}" &
@@ -95,7 +120,6 @@ print_log() {
     done
     echo "" >&2
 }
-
 
 get_hashmap() {
     unset wallHash
@@ -182,6 +206,10 @@ get_themes() {
     unset thmSort
     unset thmList
     unset thmWall
+    if [ ! -d "$HYDE_CONFIG_HOME/themes" ]; then
+        print_log -sec "theme" -warn "themes" "no theme directory at $HYDE_CONFIG_HOME/themes"
+        return 1
+    fi
     while read -r thmDir; do
         local realWallPath
         realWallPath="$(readlink "$thmDir/wall.set")"
@@ -333,7 +361,7 @@ get_hyprConf() {
         "CODE_THEME") echo "Wallbash" ;;
         "SDDM_THEME") echo "" ;;
         *) grep "^[[:space:]]*\$default.$hyVar\s*=" \
-            "XDG_DATA_HOME/hyde/hyde.conf" \
+            "$XDG_DATA_HOME/hyde/hyde.conf" \
             "$XDG_DATA_HOME/hyde/hyprland.conf" \
             "/usr/local/share/hyde/hyde.conf" \
             "/usr/local/share/hyde/hyprland.conf" \
@@ -344,34 +372,79 @@ get_hyprConf() {
         echo "$gsVal"
     fi
 }
+# Reads a monitor scale as a whole percent, so 100 comes back for 1, 1.0 and
+# 1.00 alike. Deleting the dot instead makes the result depend on how many
+# decimals the compositor printed, and a scale that arrives as 1 rather than
+# 1.00 leaves every measurement dividing by it a hundred times too large.
+get_monitor_scale() {
+    local raw=${1:-}
+    if [ -z "${raw}" ]; then
+        raw=$(hyprctl -j monitors 2>/dev/null | jq -r 'first(.[] | select(.focused==true) | .scale) // empty' 2>/dev/null)
+    fi
+    awk -v raw="${raw}" 'BEGIN {
+        scale = raw + 0
+        if (scale <= 0) scale = 1
+        printf "%d", scale * 100 + 0.5
+    }'
+}
 get_rofi_pos() {
     [[ -n $HYPRLAND_INSTANCE_SIGNATURE ]] || return 1
-    readarray -t curPos < <(hyprctl cursorpos -j | jq -r '.x,.y')
-    eval "$(hyprctl -j monitors | jq -r '.[] | select(.focused==true) |
-        "monRes=(\(.width) \(.height) \(.scale) \(.x) \(.y)) offRes=(\(.reserved | join(" ")))"')"
-    monRes[2]="${monRes[2]//./}"
-    monRes[0]=$((monRes[0] * 100 / monRes[2]))
-    monRes[1]=$((monRes[1] * 100 / monRes[2]))
-    curPos[0]=$((curPos[0] - monRes[3]))
-    curPos[1]=$((curPos[1] - monRes[4]))
-    offRes=("${offRes// / }")
-    if [ "${curPos[0]}" -ge "$((monRes[0] / 2))" ]; then
-        local x_pos="east"
-        local x_off="-$((monRes[0] - curPos[0] - offRes[2]))"
+    local cx cy mon mw mh mx my scale lft top rgt bot rel_x rel_y
+    local x_pos y_pos x_off y_off
+    cx=$(hyprctl cursorpos -j | jq -r '.x')
+    cy=$(hyprctl cursorpos -j | jq -r '.y')
+    # Logical size: odd transform (90/270) swaps width/height. Hyprland still
+    # reports the pre-rotate mode size, so portrait DP-1 is 2560x1080 transform 1
+    # while the layout slot is 1080x2560. Using the mode size makes cursor Y
+    # overshoot the "monitor" and bash `-$((negative))` emits `--Npx` offsets
+    # that throw rofi into the dead zone above the ultrawide.
+    mon=$(hyprctl -j monitors | jq -c --argjson x "$cx" --argjson y "$cy" '
+        def logical:
+            (if ((.transform // 0) | tonumber) % 2 == 1
+             then {w: .height, h: .width}
+             else {w: .width,  h: .height}
+             end) + {x: .x, y: .y, scale: .scale, reserved: .reserved, name: .name};
+        def hit($m):
+            ($x >= $m.x) and ($x < $m.x + $m.w) and ($y >= $m.y) and ($y < $m.y + $m.h);
+        ([.[] | logical] | map(select(hit(.))) | .[0])
+        // ([.[] | select(.focused == true) | logical] | .[0])
+    ')
+    [[ -n $mon && $mon != null ]] || return 1
+    mw=$(jq -r '.w' <<<"$mon")
+    mh=$(jq -r '.h' <<<"$mon")
+    mx=$(jq -r '.x' <<<"$mon")
+    my=$(jq -r '.y' <<<"$mon")
+    scale=$(get_monitor_scale "$(jq -r '.scale' <<<"$mon")")
+    ROFI_POS_MONITOR=$(jq -r '.name' <<<"$mon")
+    export ROFI_POS_MONITOR
+    lft=$(jq -r '.reserved[0] // 0' <<<"$mon")
+    top=$(jq -r '.reserved[1] // 0' <<<"$mon")
+    rgt=$(jq -r '.reserved[2] // 0' <<<"$mon")
+    bot=$(jq -r '.reserved[3] // 0' <<<"$mon")
+    mw=$((mw * 100 / scale))
+    mh=$((mh * 100 / scale))
+    rel_x=$((cx - mx))
+    rel_y=$((cy - my))
+    ((rel_x < 0)) && rel_x=0
+    ((rel_y < 0)) && rel_y=0
+    ((rel_x > mw)) && rel_x=$mw
+    ((rel_y > mh)) && rel_y=$mh
+    if ((rel_x >= mw / 2)); then
+        x_pos="east"
+        x_off=$((rel_x - mw + rgt))
     else
-        local x_pos="west"
-        local x_off="$((curPos[0] - offRes[0]))"
+        x_pos="west"
+        x_off=$((rel_x - lft))
     fi
-    if [ "${curPos[1]}" -ge "$((monRes[1] / 2))" ]; then
-        local y_pos="south"
-        local y_off="-$((monRes[1] - curPos[1] - offRes[3]))"
+    if ((rel_y >= mh / 2)); then
+        y_pos="south"
+        y_off=$((rel_y - mh + bot))
     else
-        local y_pos="north"
-        local y_off="$((curPos[1] - offRes[1]))"
+        y_pos="north"
+        y_off=$((rel_y - top))
     fi
-    local coordinates="window{location:$x_pos $y_pos;anchor:$x_pos $y_pos;x-offset:${x_off}px;y-offset:${y_off}px;}"
-    echo "$coordinates"
-
+    printf 'configuration{monitor:"%s";}window{location:%s %s;anchor:%s %s;x-offset:%dpx;y-offset:%dpx;}\n' \
+        "$ROFI_POS_MONITOR" "$x_pos" "$y_pos" "$x_pos" "$y_pos" "$x_off" "$y_off"
 }
 paste_string() {
     if ! command -v wtype >/dev/null; then exit 0; fi
@@ -391,7 +464,7 @@ EOF
     [ -n "$ignore_class" ] && echo "$ignore_class" >>"$ignore_paste_file" && print_log -y "[ignore]" "'$ignore_class'" && exit 0
     class=$(hyprctl -j activewindow | jq -r '.initialClass')
     if ! grep -q "$class" "$ignore_paste_file"; then
-        hyprctl -q dispatch exec 'wtype -M ctrl V -m ctrl'
+        hyprctl eval 'hl.exec_cmd("wtype -M ctrl V -m ctrl")' >/dev/null
     fi
 }
 is_hovered() {
@@ -408,16 +481,42 @@ is_hovered() {
     fi
     return 1
 }
+##
+# Reports whether the generated colour state this installation reads is on disk.
+# Hyprland reads the Lua state, and the colour include is required alongside it
+# because hyprlock, which has no Lua configuration, sources that file.
+#
+# Globals:
+#   HYDE_STATE_HOME, confDir
+# Returns:
+#   0 when every artefact exists and carries content, 1 otherwise
+##
+wallbash_state_is_complete() {
+    local required=(
+        "$confDir/hypr/themes/colors.conf"
+        "$HYDE_STATE_HOME/lua_state/colors.lua"
+        "$HYDE_STATE_HOME/lua_state/ui.lua"
+    )
+    local artefact
+    for artefact in "${required[@]}"; do
+        if [ ! -f "$artefact" ] || [ ! -s "$artefact" ]; then
+            return 1
+        fi
+    done
+    return 0
+}
 toml_write() {
     local config_file=$1
     local group=$2
     local key=$3
     local value=$4
-    if ! kwriteconfig6 --file "$config_file" --group "$group" --key "$key" "$value" 2>/dev/null; then
+    if ! kwriteconfig6 --file "$config_file" --group "$group" --key "$key" "$value" >/dev/null; then
         if ! grep -q "^\[$group\]" "$config_file"; then
             echo -e "\n[$group]\n$key=$value" >>"$config_file"
         elif ! grep -q "^$key=" "$config_file"; then
             sed -i "/^\[$group\]/a $key=$value" "$config_file"
+        else
+            sed -i "/^\[$group\]/,/^\[.*\]/s/^$key=.*/$key=$value/" "$config_file"
         fi
     fi
 }
@@ -448,4 +547,12 @@ dconf_write() {
         print_log -sec "dconf" -warn "failed to set" "$key"
     fi
 }
-export -f get_hyprConf get_rofi_pos is_hovered toml_write get_hashmap get_aurhlpr set_conf set_hash check_package get_themes print_log pkg_installed paste_string extract_thumbnail accepted_mime_types dconf_write send_notifs export_hyde_config
+export -f get_hyprConf get_monitor_scale get_rofi_pos is_hovered toml_write get_hashmap get_aurhlpr set_conf set_hash check_package get_themes print_log pkg_installed paste_string extract_thumbnail accepted_mime_types dconf_write send_notifs export_hyde_config wallbash_state_is_complete
+
+##
+# Fails the source when the generated-state directories could not be created,
+# so a caller does not render templates into a directory that is not there.
+##
+if [ "${hyde_state_dirs_status:-0}" -ne 0 ]; then
+    return "$hyde_state_dirs_status" 2>/dev/null || exit "$hyde_state_dirs_status"
+fi
