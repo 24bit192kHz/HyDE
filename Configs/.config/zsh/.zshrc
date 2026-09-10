@@ -38,6 +38,22 @@
 #  This is your file 
 # Add your configurations here
 # export EDITOR=nvim
-# export EDITOR=code
+export EDITOR=code
 
 # unset -f command_not_found_handler # Uncomment to prevent searching for commands not found in package manager
+
+. "$HOME/.local/share/../bin/env"
+
+# opencode
+export PATH=/home/btw/.opencode/bin:$PATH
+
+# Pi
+export PATH="/home/btw/.npm-global/bin:$PATH"
+
+# kilo
+export PATH=/home/btw/.kilo/bin:$PATH
+
+# codex-h1bridge: local HTTP/1.1 downgrade proxy for codex-everywhere (fixes
+# `Reconnecting... Connection failed` on large POST bodies over HTTP/2).
+# Revert: delete these two lines and restore ~/.codex/config.toml.bak-h1.
+export CODEX_CA_CERTIFICATE=/home/btw/.local/share/codex-h1bridge/ca.pem

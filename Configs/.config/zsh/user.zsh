@@ -42,7 +42,7 @@ omp() {
         return $?
     fi
     case "$1" in
-        update|config|completions|plugin|agents|bench|cleanse|auth-broker|auth-gateway|browser-relay|commit|compress|dry-balance|gallery|gc|git|grep|grievances|if-bench|images|install|join|models|ps|read|render|say|search|setup|share|shell|ssh|stats|tiny-models|token|ttsr|usage|worktree|-h|--help|-v|--version|-p|--print)
+        acp|update|config|completions|plugin|agents|bench|cleanse|auth-broker|auth-gateway|browser-relay|commit|compress|dry-balance|gallery|gc|git|grep|grievances|if-bench|images|install|join|models|ps|read|render|say|search|setup|share|shell|ssh|stats|tiny-models|token|ttsr|usage|worktree|-h|--help|-v|--version|-p|--print|-*)
             command omp "$@"
             return $?
             ;;

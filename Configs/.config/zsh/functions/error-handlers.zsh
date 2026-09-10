@@ -1,4 +1,12 @@
 function command_not_found_handler {
+    # A missing package-manager command must not re-enter this handler forever.
+    # This can happen in sanitized Cursor/agent shells and otherwise overflows
+    # zsh's stack while handling the original missing command.
+    if [[ -n ${_HYDE_COMMAND_NOT_FOUND_ACTIVE:-} ]]; then
+        return 127
+    fi
+    local _HYDE_COMMAND_NOT_FOUND_ACTIVE=1
+
     local purple='\e[1;35m' bright='\e[0;1m' green='\e[1;32m' reset='\e[0m'
     printf "${green}zsh${reset}: command ${purple}NOT${reset} found: ${bright}'%s'${reset}\n" "$1"
 

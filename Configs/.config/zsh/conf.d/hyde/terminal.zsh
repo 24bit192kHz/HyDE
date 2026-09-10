@@ -232,7 +232,7 @@ __package_manager () {
     ${PM_COMMAND[@]} "$@"
 }
 
-alias c='clear' \
+alias c='clear && printf "\e[3J"' \
     in='__package_manager install' \
     un='__package_manager remove' \
     up='__package_manager upgrade' \
@@ -246,3 +246,5 @@ alias c='clear' \
     .4='cd ../../../..' \
     .5='cd ../../../../..' \
     mkdir='mkdir -p'
+
+export PATH="/home/btw/.cache/.bun/bin:$PATH"
