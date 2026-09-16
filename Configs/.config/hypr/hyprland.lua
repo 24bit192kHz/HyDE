@@ -110,7 +110,7 @@ local function start_user_once(cmd, on_reload)
 		return
 	end
 	if cmd:find("easyeffects", 1, true) then
-		check_exec("sh -c 'pgrep -f easyeffects >/dev/null || exec easyeffects --service-mode --hide-window'")
+		check_exec("sh -c 'pgrep -x easyeffects >/dev/null || exec easyeffects --service-mode --hide-window'")
 		return
 	end
 	check_exec(cmd)
